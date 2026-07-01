@@ -233,3 +233,5 @@ Tests cover:
 | 2 | Token scorer | CONFIDENTIAL + `@corp/` code block |
 | 3 | ONNX WASM | Long proprietary code payloads (after model loads) |
 | 4 | Gemini Nano | Semantic review when Chrome Prompt API is available |
+
+> **Note on ONNX Latency:** The Tier 3 ONNX WASM classifier requires a one-time ~25MB download of model weights from Hugging Face on its first run. You may experience a 1–3 second delay on the very first long-payload classification. Subsequent classifications are cached and nearly instant.

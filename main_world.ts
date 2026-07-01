@@ -1,6 +1,4 @@
 (() => {
-  const currentScript = document.currentScript as HTMLScriptElement | null;
-
   function getLanguageModel(): {
     availability?: (opts?: unknown) => Promise<string>;
     capabilities?: (opts?: unknown) => Promise<{ available: string }>;

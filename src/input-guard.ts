@@ -119,7 +119,6 @@ export class InputGuard {
       if (this.settings.showWarningOverlay) {
         showBlockWarning(result.matches, this.settings.organizationName);
       }
-      this.onBlock?.(result, element, 'paste');
       return;
     }
 
@@ -148,7 +147,7 @@ export class InputGuard {
       ? currentValue.slice(previousValue.length)
       : currentValue;
 
-    const result = await this.classifyPayload(delta.length >= 12 ? currentValue : delta);
+    const result = await this.classifyPayload(delta.length >= 12 ? currentValue : delta, 'input', element.tagName.toLowerCase());
     if (!result.blocked) {
       elementPreviousValues.set(element, currentValue);
       return;
@@ -158,11 +157,10 @@ export class InputGuard {
     if (this.settings.showWarningOverlay) {
       showBlockWarning(result.matches, this.settings.organizationName);
     }
-    this.onBlock?.(result, element, 'input');
   }, 400);
 
-  private async classifyPayload(text: string): Promise<ClassificationResult> {
-    const remote = await requestBackgroundClassification(text);
+  private async classifyPayload(text: string, eventType: 'paste' | 'input' = 'paste', elementTag = 'unknown'): Promise<ClassificationResult> {
+    const remote = await requestBackgroundClassification(text, eventType, elementTag);
     if (remote) return remote;
     return classifyWithRules(text, this.settings);
   }

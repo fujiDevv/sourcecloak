@@ -1,6 +1,7 @@
 import { DEFAULT_SETTINGS, MAX_AUDIT_ENTRIES, STORAGE_KEYS } from './src/constants';
 import { classifyWithRules } from './src/classifier';
 import { extensionApi, supportsOffscreenDocuments } from './src/platform';
+import { isDomainMatch } from './src/utils';
 import type { AuditEntry, ClassificationResult, SourceCloakSettings, SourceCloakStats } from './src/types';
 
 const supportsOffscreen = supportsOffscreenDocuments();
@@ -225,14 +226,6 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
           });
           return;
         }
-
-        const isDomainMatch = (host: string, patterns: string[]) => patterns.some(pattern => {
-          if (pattern.startsWith('*.')) {
-            const suffix = pattern.slice(2);
-            return host === suffix || host.endsWith('.' + suffix);
-          }
-          return host === pattern;
-        });
 
         if (isDomainMatch(hostname, settings.trustedDomains)) {
           sendResponse({

@@ -168,7 +168,7 @@ interface LanguageModelProvider {
   create(options: Record<string, unknown>): Promise<LanguageModelSession>;
 }
 
-export async function requestBackgroundClassification(text: string): Promise<import('./types').ClassificationResult | null> {
+export async function requestBackgroundClassification(text: string, eventType: 'paste' | 'input' = 'paste', elementTag = 'unknown'): Promise<import('./types').ClassificationResult | null> {
   try {
     const response = await extensionApi.runtime.sendMessage<{
       success: boolean;
@@ -179,8 +179,8 @@ export async function requestBackgroundClassification(text: string): Promise<imp
       text,
       hostname: typeof location !== 'undefined' ? location.hostname : 'unknown',
       url: typeof location !== 'undefined' ? location.href : 'unknown',
-      eventType: 'paste',
-      elementTag: 'unknown'
+      eventType,
+      elementTag
     });
 
     if (!response?.success || !response.result) return null;

@@ -112,12 +112,12 @@
         <div class="card-grid">
           <article class="card">
             <h3>Monitored Domains</h3>
-            <p class="hint">Leave empty to monitor all domains. Otherwise only listed hosts are scanned.</p>
+            <p class="hint">Leave empty to monitor all domains. Use <code>*.domain.com</code> for wildcard subdomains.</p>
             <textarea id="monitored-domains" rows="8" placeholder="chat.openai.com&#10;claude.ai&#10;translate.google.com"></textarea>
           </article>
           <article class="card">
             <h3>Trusted Domains</h3>
-            <p class="hint">Hosts in this list bypass all scanning.</p>
+            <p class="hint">Hosts in this list bypass all scanning. Wildcards like <code>*.acme.corp</code> are supported.</p>
             <textarea id="trusted-domains" rows="8" placeholder="github.com&#10;localhost"></textarea>
           </article>
         </div>
