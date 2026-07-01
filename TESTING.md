@@ -235,7 +235,7 @@ Tests cover:
 | `content.ts` MIME error   | Rebuild with `npm run build` and reload `dist/`                       |
 | Block test not triggering | Check **Protection** is enabled in popup                              |
 | All scans skipped         | Verify the site is not listed under **Trusted Domains**               |
-| Only some hosts monitored | Check **Monitored Domains** in Policy Console — empty means all hosts |
+| Only some hosts monitored | Community scans preset AI chat domains only; Pro can customize **Monitored Domains** (empty = all hosts) |
 
 ---
 
