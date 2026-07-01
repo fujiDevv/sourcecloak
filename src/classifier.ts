@@ -1,8 +1,8 @@
-import type { ClassificationResult, ShieldSettings, ThreatMatch } from './types';
+import type { ClassificationResult, SourceCloakSettings, ThreatMatch } from './types';
 import { runPatternScan } from './patterns';
 import { aggregateScore, scoreProprietaryTokens } from './token-scorer';
 
-export function classifyWithRules(text: string, settings: ShieldSettings): ClassificationResult {
+export function classifyWithRules(text: string, settings: SourceCloakSettings): ClassificationResult {
   const started = performance.now();
 
   if (!text || text.trim().length < 4) {

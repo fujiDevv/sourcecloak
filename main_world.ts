@@ -1,6 +1,5 @@
 (() => {
   const currentScript = document.currentScript as HTMLScriptElement | null;
-  const BRIDGE_TOKEN = currentScript?.dataset.token;
 
   function getLanguageModel(): {
     availability?: (opts?: unknown) => Promise<string>;
@@ -20,12 +19,12 @@
 
   window.addEventListener('message', (initEvent) => {
     if (initEvent.source !== window || !initEvent.data) return;
-    if (initEvent.data.type === 'SHIELD_AI_INIT_PORT' && initEvent.ports[0]) {
+    if (initEvent.data.type === 'SOURCECLOAK_AI_INIT_PORT' && initEvent.ports[0]) {
       const port = initEvent.ports[0];
       port.onmessage = async (event) => {
         if (!event.data) return;
 
-        if (event.data.type === 'SHIELD_AI_AVAILABILITY_REQUEST') {
+        if (event.data.type === 'SOURCECLOAK_AI_AVAILABILITY_REQUEST') {
           const lm = getLanguageModel();
           let availability: string = 'unavailable';
 
@@ -45,19 +44,19 @@
           }
 
           port.postMessage({
-            type: 'SHIELD_AI_AVAILABILITY_RESPONSE',
+            type: 'SOURCECLOAK_AI_AVAILABILITY_RESPONSE',
             id: event.data.id,
             availability
           });
         }
 
-        if (event.data.type === 'SHIELD_AI_PROMPT_REQUEST') {
+        if (event.data.type === 'SOURCECLOAK_AI_PROMPT_REQUEST') {
           const { id, systemPrompt, prompt } = event.data;
           const lm = getLanguageModel();
 
           if (!lm) {
             port.postMessage({
-              type: 'SHIELD_AI_PROMPT_RESPONSE',
+              type: 'SOURCECLOAK_AI_PROMPT_RESPONSE',
               id,
               error: 'Prompt API unavailable in page context'
             });
@@ -77,7 +76,7 @@
 
             if (availability !== 'available' && availability !== 'downloadable' && availability !== 'downloading') {
               port.postMessage({
-                type: 'SHIELD_AI_PROMPT_RESPONSE',
+                type: 'SOURCECLOAK_AI_PROMPT_RESPONSE',
                 id,
                 error: `Gemini Nano not ready: ${availability}`
               });
@@ -92,14 +91,14 @@
 
             const resultText = await session.prompt(prompt);
             port.postMessage({
-              type: 'SHIELD_AI_PROMPT_RESPONSE',
+              type: 'SOURCECLOAK_AI_PROMPT_RESPONSE',
               id,
               resultText
             });
           } catch (error: unknown) {
             const message = error instanceof Error ? error.message : String(error);
             port.postMessage({
-              type: 'SHIELD_AI_PROMPT_RESPONSE',
+              type: 'SOURCECLOAK_AI_PROMPT_RESPONSE',
               id,
               error: message
             });

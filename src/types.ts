@@ -26,7 +26,7 @@ export interface ClassificationResult {
   processingMs: number;
 }
 
-export interface ShieldSettings {
+export interface SourceCloakSettings {
   enabled: boolean;
   sensitivity: number;
   blockPaste: boolean;
@@ -54,7 +54,7 @@ export interface AuditEntry {
   elementTag: string;
 }
 
-export interface ShieldStats {
+export interface SourceCloakStats {
   totalScans: number;
   totalBlocks: number;
   lastBlockTime?: number;
@@ -70,6 +70,6 @@ export type ShieldMessage =
   | { type: 'get-audit-log' }
   | { type: 'check-model-status' }
   | { type: 'update-model-progress'; state: string; progress: number }
-  | { type: 'run-offscreen-classification'; text: string; settings: ShieldSettings }
+  | { type: 'run-offscreen-classification'; text: string; settings: SourceCloakSettings }
   | { type: 'check-offscreen-model-status' }
   | { type: 'show-block-warning'; matches: ThreatMatch[]; hostname: string };

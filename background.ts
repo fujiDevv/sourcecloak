@@ -1,33 +1,39 @@
 import { DEFAULT_SETTINGS, MAX_AUDIT_ENTRIES, STORAGE_KEYS } from './src/constants';
 import { classifyWithRules } from './src/classifier';
 import { extensionApi, supportsOffscreenDocuments } from './src/platform';
-import type { AuditEntry, ClassificationResult, ShieldSettings, ShieldStats } from './src/types';
+import type { AuditEntry, ClassificationResult, SourceCloakSettings, SourceCloakStats } from './src/types';
 
 const supportsOffscreen = supportsOffscreenDocuments();
 let creatingOffscreen: Promise<void> | null = null;
 
-async function getSettings(): Promise<ShieldSettings> {
+async function getSettings(): Promise<SourceCloakSettings> {
   const data = await extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.SETTINGS);
-  return { ...DEFAULT_SETTINGS, ...(data[STORAGE_KEYS.SETTINGS] as Partial<ShieldSettings> | undefined) };
+  return { ...DEFAULT_SETTINGS, ...(data[STORAGE_KEYS.SETTINGS] as Partial<SourceCloakSettings> | undefined) };
 }
 
-async function getStats(): Promise<ShieldStats> {
+async function getStats(): Promise<SourceCloakStats> {
   const data = await extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.STATS);
-  return (data[STORAGE_KEYS.STATS] as ShieldStats | undefined) ?? {
+  return (data[STORAGE_KEYS.STATS] as SourceCloakStats | undefined) ?? {
     totalScans: 0,
     totalBlocks: 0,
     blocksByCategory: {}
   };
 }
 
-async function saveStats(stats: ShieldStats): Promise<void> {
+async function saveStats(stats: SourceCloakStats): Promise<void> {
   await extensionApi.storage.local.set({ [STORAGE_KEYS.STATS]: stats });
 }
 
 async function appendAuditEntry(entry: AuditEntry): Promise<void> {
+  const settings = await getSettings();
   const data = await extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.AUDIT_LOG);
   const existing = (data[STORAGE_KEYS.AUDIT_LOG] as AuditEntry[] | undefined) ?? [];
-  const next = [entry, ...existing].slice(0, MAX_AUDIT_ENTRIES);
+  const cutoff = Date.now() - (settings.auditRetentionDays * 24 * 60 * 60 * 1000);
+  
+  const next = [entry, ...existing]
+    .filter(e => e.timestamp > cutoff)
+    .slice(0, MAX_AUDIT_ENTRIES);
+    
   await extensionApi.storage.local.set({ [STORAGE_KEYS.AUDIT_LOG]: next });
 }
 
@@ -81,7 +87,7 @@ async function setupOffscreen(): Promise<void> {
   }
 }
 
-async function classifyPayload(text: string, settings: ShieldSettings): Promise<ClassificationResult> {
+async function classifyPayload(text: string, settings: SourceCloakSettings): Promise<ClassificationResult> {
   if (supportsOffscreen && (settings.useOnnxClassifier || settings.useGeminiNano)) {
     try {
       await setupOffscreen();
@@ -152,7 +158,7 @@ extensionApi.runtime.onStartup?.addListener(async () => {
 
 extensionApi.storage.onChanged?.addListener((changes) => {
   if (!changes[STORAGE_KEYS.SETTINGS]) return;
-  const settings = changes[STORAGE_KEYS.SETTINGS].newValue as ShieldSettings | undefined;
+  const settings = changes[STORAGE_KEYS.SETTINGS].newValue as SourceCloakSettings | undefined;
   if (settings?.enabled && supportsOffscreen) {
     setupOffscreen().catch(() => {});
   }

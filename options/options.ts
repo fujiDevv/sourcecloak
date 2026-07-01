@@ -1,6 +1,6 @@
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from '../src/constants';
 import { extensionApi } from '../src/platform';
-import type { AuditEntry, ShieldSettings } from '../src/types';
+import type { AuditEntry, SourceCloakSettings } from '../src/types';
 
 const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.nav-btn'));
 const tabSections = Array.from(document.querySelectorAll<HTMLElement>('.tab'));
@@ -19,7 +19,7 @@ function arrayToLines(values: string[]): string {
   return values.join('\n');
 }
 
-function readForm(): ShieldSettings {
+function readForm(): SourceCloakSettings {
   return {
     enabled: (document.getElementById('enabled') as HTMLInputElement).checked,
     blockPaste: (document.getElementById('block-paste') as HTMLInputElement).checked,
@@ -37,7 +37,7 @@ function readForm(): ShieldSettings {
   };
 }
 
-function applyForm(settings: ShieldSettings): void {
+function applyForm(settings: SourceCloakSettings): void {
   (document.getElementById('enabled') as HTMLInputElement).checked = settings.enabled;
   (document.getElementById('block-paste') as HTMLInputElement).checked = settings.blockPaste;
   (document.getElementById('block-input') as HTMLInputElement).checked = settings.blockInput;
@@ -54,7 +54,7 @@ function applyForm(settings: ShieldSettings): void {
 }
 
 async function loadSettings(): Promise<void> {
-  const response = await extensionApi.runtime.sendMessage<{ success: boolean; settings: ShieldSettings }>({ type: 'get-settings' });
+  const response = await extensionApi.runtime.sendMessage<{ success: boolean; settings: SourceCloakSettings }>({ type: 'get-settings' });
   applyForm({ ...DEFAULT_SETTINGS, ...(response?.settings ?? {}) });
 }
 

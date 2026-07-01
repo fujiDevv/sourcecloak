@@ -1,4 +1,4 @@
-import type { ClassificationResult, ShieldSettings } from './types';
+import type { ClassificationResult, SourceCloakSettings } from './types';
 import { debounce } from './throttle';
 import { requestBackgroundClassification } from './ai';
 import { classifyWithRules } from './classifier';
@@ -10,13 +10,13 @@ const GUARDED_SELECTOR = 'textarea, input[type="text"], input[type="search"], in
 const elementPreviousValues = new WeakMap<Element, string>();
 
 export interface InputGuardOptions {
-  settings: ShieldSettings;
+  settings: SourceCloakSettings;
   onBlock?: (result: ClassificationResult, element: GuardedElement, eventType: 'paste' | 'input') => void;
 }
 
 export class InputGuard {
   private observer: MutationObserver | null = null;
-  private settings: ShieldSettings;
+  private settings: SourceCloakSettings;
   private onBlock?: InputGuardOptions['onBlock'];
   private isOrphaned = false;
   private attachedElementsList = new Set<GuardedElement>();
@@ -39,7 +39,7 @@ export class InputGuard {
     this.observer.observe(document.documentElement, { childList: true, subtree: true });
   }
 
-  updateSettings(settings: ShieldSettings): void {
+  updateSettings(settings: SourceCloakSettings): void {
     this.settings = settings;
   }
 
@@ -101,6 +101,17 @@ export class InputGuard {
 
     pasteEvent.preventDefault();
     pasteEvent.stopImmediatePropagation();
+
+    // Synchronous Tier 1 (Rules) for instant credential blocks
+    const syncResult = classifyWithRules(clipboardText, this.settings);
+    if (syncResult.blocked) {
+      this.purgeElement(element);
+      if (this.settings.showWarningOverlay) {
+        showBlockWarning(syncResult.matches, this.settings.organizationName);
+      }
+      this.onBlock?.(syncResult, element, 'paste');
+      return;
+    }
 
     const result = await this.classifyPayload(clipboardText);
     if (result.blocked) {

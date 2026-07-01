@@ -1,6 +1,6 @@
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from '../src/constants';
 import { extensionApi } from '../src/platform';
-import type { AuditEntry, ShieldSettings, ShieldStats } from '../src/types';
+import type { AuditEntry, SourceCloakSettings, SourceCloakStats } from '../src/types';
 
 const enabledToggle = document.getElementById('toggle-enabled') as HTMLInputElement;
 const statusPill = document.getElementById('status-pill') as HTMLSpanElement;
@@ -13,8 +13,8 @@ const openOptionsBtn = document.getElementById('open-options') as HTMLButtonElem
 
 async function loadDashboard(): Promise<void> {
   const [settingsRes, statsRes, auditRes, modelRes] = await Promise.all([
-    extensionApi.runtime.sendMessage<{ success: boolean; settings: ShieldSettings }>({ type: 'get-settings' }),
-    extensionApi.runtime.sendMessage<{ success: boolean; stats: ShieldStats }>({ type: 'get-stats' }),
+    extensionApi.runtime.sendMessage<{ success: boolean; settings: SourceCloakSettings }>({ type: 'get-settings' }),
+    extensionApi.runtime.sendMessage<{ success: boolean; stats: SourceCloakStats }>({ type: 'get-stats' }),
     extensionApi.runtime.sendMessage<{ success: boolean; entries: AuditEntry[] }>({ type: 'get-audit-log' }),
     extensionApi.runtime.sendMessage<{ success: boolean; state: string; progress: number }>({ type: 'check-model-status' })
   ]);
@@ -50,7 +50,7 @@ async function loadDashboard(): Promise<void> {
 
 enabledToggle.addEventListener('change', async () => {
   const current = await extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.SETTINGS);
-  const settings = { ...DEFAULT_SETTINGS, ...(current[STORAGE_KEYS.SETTINGS] as Partial<ShieldSettings> | undefined) };
+  const settings = { ...DEFAULT_SETTINGS, ...(current[STORAGE_KEYS.SETTINGS] as Partial<SourceCloakSettings> | undefined) };
   settings.enabled = enabledToggle.checked;
   await extensionApi.storage.local.set({ [STORAGE_KEYS.SETTINGS]: settings });
   await loadDashboard();

@@ -131,16 +131,9 @@ The postbuild step validates that `dist/manifest.json` references compiled `.js`
 
 ### Load in Chrome
 
-> **Important:** Load the **`dist/`** folder only — not the project root.
-
-1. Open `chrome://extensions`
-2. Enable **Developer mode**
-3. Click **Load unpacked**
-4. Select:
-
-```
-SourceCloak-shield/dist
-```
+3. Open Chrome and navigate to `chrome://extensions`.
+4. Enable **Developer mode** in the top right.
+5. Click **Load unpacked** and select the `sourcecloak/dist` directory.
 
 ### Verify protection
 

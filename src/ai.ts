@@ -37,7 +37,7 @@ export async function checkGeminiNanoAvailability(): Promise<'available' | 'down
       if (resolved) return;
       if (
         !event.data ||
-        event.data.type !== 'SHIELD_AI_AVAILABILITY_RESPONSE' ||
+        event.data.type !== 'SOURCECLOAK_AI_AVAILABILITY_RESPONSE' ||
         event.data.id !== requestId
       ) return;
 
@@ -47,7 +47,7 @@ export async function checkGeminiNanoAvailability(): Promise<'available' | 'down
     };
 
     mainWorldPort!.addEventListener('message', handler);
-    mainWorldPort!.postMessage({ type: 'SHIELD_AI_AVAILABILITY_REQUEST', id: requestId });
+    mainWorldPort!.postMessage({ type: 'SOURCECLOAK_AI_AVAILABILITY_REQUEST', id: requestId });
 
     setTimeout(() => {
       if (!resolved) {
@@ -132,7 +132,7 @@ export async function promptGeminiNano(systemPrompt: string, prompt: string): Pr
       if (resolved) return;
       if (
         !event.data ||
-        event.data.type !== 'SHIELD_AI_PROMPT_RESPONSE' ||
+        event.data.type !== 'SOURCECLOAK_AI_PROMPT_RESPONSE' ||
         event.data.id !== requestId
       ) return;
 
@@ -143,7 +143,7 @@ export async function promptGeminiNano(systemPrompt: string, prompt: string): Pr
 
     mainWorldPort!.addEventListener('message', handler);
     mainWorldPort!.postMessage({
-      type: 'SHIELD_AI_PROMPT_REQUEST',
+      type: 'SOURCECLOAK_AI_PROMPT_REQUEST',
       id: requestId,
       systemPrompt,
       prompt

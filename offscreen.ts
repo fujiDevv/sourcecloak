@@ -2,7 +2,7 @@
 import { pipeline, env } from '@huggingface/transformers';
 import { classifyWithRules, mergeClassificationResults } from './src/classifier';
 import { classifyWithGeminiNano } from './src/ai';
-import type { ClassificationResult, ShieldSettings } from './src/types';
+import type { ClassificationResult, SourceCloakSettings } from './src/types';
 import { extensionApi, getRuntimeUrl } from './src/platform';
 
 const wasmConfig = (env as Record<string, unknown> & {
@@ -71,7 +71,7 @@ async function getClassifier(): Promise<ClassifierPipeline> {
   return classifierPromise;
 }
 
-async function runOnnxHeuristic(text: string, settings: ShieldSettings): Promise<ClassificationResult | null> {
+async function runOnnxHeuristic(text: string, settings: SourceCloakSettings): Promise<ClassificationResult | null> {
   if (!settings.useOnnxClassifier || text.length < 24) return null;
 
   try {
@@ -102,7 +102,7 @@ async function runOnnxHeuristic(text: string, settings: ShieldSettings): Promise
   }
 }
 
-async function runFullClassification(text: string, settings: ShieldSettings): Promise<ClassificationResult> {
+async function runFullClassification(text: string, settings: SourceCloakSettings): Promise<ClassificationResult> {
   const started = performance.now();
   let result = classifyWithRules(text, settings);
 
@@ -136,7 +136,7 @@ async function runFullClassification(text: string, settings: ShieldSettings): Pr
 
 extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => {
   if (message.type === 'run-offscreen-classification') {
-    const { text, settings } = message as { text: string; settings: ShieldSettings };
+    const { text, settings } = message as { text: string; settings: SourceCloakSettings };
 
     if (settings.useOnnxClassifier && modelLoadingState === 'idle') {
       getClassifier().catch(() => {});

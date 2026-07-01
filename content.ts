@@ -1,10 +1,10 @@
 import { InputGuard } from './src/input-guard';
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from './src/constants';
 import { setMainWorldPort } from './src/ai';
-import type { AuditEntry, ClassificationResult, ShieldSettings } from './src/types';
+import type { AuditEntry, ClassificationResult, SourceCloakSettings } from './src/types';
 import { extensionApi, getRuntimeUrl } from './src/platform';
 
-let currentSettings: ShieldSettings = { ...DEFAULT_SETTINGS };
+let currentSettings: SourceCloakSettings = { ...DEFAULT_SETTINGS };
 let inputGuard: InputGuard | null = null;
 let isOrphaned = false;
 
@@ -21,7 +21,7 @@ let isOrphaned = false;
     script.src = getRuntimeUrl('main_world.js');
     script.onload = () => {
       script.remove();
-      window.postMessage({ type: 'SHIELD_AI_INIT_PORT' }, '*', [channel.port2]);
+      window.postMessage({ type: 'SOURCECLOAK_AI_INIT_PORT' }, '*', [channel.port2]);
     };
     (document.head || document.documentElement).appendChild(script);
   } catch (err) {
@@ -56,7 +56,7 @@ function safeSendMessage<T = unknown>(message: unknown): Promise<T | undefined> 
 }
 
 async function loadSettings(): Promise<void> {
-  const response = await safeSendMessage<{ success?: boolean; settings?: ShieldSettings }>({ type: 'get-settings' });
+  const response = await safeSendMessage<{ success?: boolean; settings?: SourceCloakSettings }>({ type: 'get-settings' });
   if (response?.settings) {
     currentSettings = { ...DEFAULT_SETTINGS, ...response.settings };
   }
@@ -73,13 +73,7 @@ function ensureGuard(): void {
 
   if (!inputGuard) {
     inputGuard = new InputGuard({
-      settings: currentSettings,
-      onBlock: (result, element, eventType) => {
-        safeSendMessage({
-          type: 'log-audit-entry',
-          entry: buildAuditEntry(result, element, eventType)
-        });
-      }
+      settings: currentSettings
     });
     inputGuard.start();
     return;
@@ -109,7 +103,7 @@ function buildAuditEntry(
 function handleStorageChanged(changes: Record<string, chrome.storage.StorageChange>): void {
   if (!checkContextOrCleanup()) return;
   if (!changes[STORAGE_KEYS.SETTINGS]) return;
-  const next = changes[STORAGE_KEYS.SETTINGS].newValue as ShieldSettings | undefined;
+  const next = changes[STORAGE_KEYS.SETTINGS].newValue as SourceCloakSettings | undefined;
   if (!next) return;
   currentSettings = { ...DEFAULT_SETTINGS, ...next };
   ensureGuard();
