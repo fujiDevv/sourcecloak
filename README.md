@@ -41,6 +41,7 @@ Engineering teams face constant pressure to prevent proprietary codebase exposur
 | Capability | Description |
 |------------|-------------|
 | **Paste interception** | Capture-phase `paste` blocking before network transmission |
+| **Advanced editor support** | Native safe-hooks for Monaco and CodeMirror (AI chat UIs) |
 | **Input monitoring** | Throttled continuous scanning of typed content |
 | **4-tier classifier** | Regex → token scoring → ONNX WASM → Gemini Nano semantic review |
 | **Corporate signatures** | Custom regex and internal config markers per organization |

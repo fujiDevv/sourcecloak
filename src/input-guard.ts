@@ -100,26 +100,24 @@ export class InputGuard {
     const clipboardText = pasteEvent.clipboardData?.getData('text/plain') ?? '';
     if (!clipboardText.trim()) return;
 
-    pasteEvent.preventDefault();
-    pasteEvent.stopImmediatePropagation();
-
     const hostname = window.location.hostname;
 
     if (isDomainMatch(hostname, this.settings.trustedDomains)) {
-      this.insertText(element, clipboardText);
       return;
     }
 
     if (this.settings.monitoredDomains.length > 0 &&
         !isDomainMatch(hostname, this.settings.monitoredDomains)) {
-      this.insertText(element, clipboardText);
       return;
     }
 
     // Synchronous Tier 1 (Rules) for instant credential blocks
     const syncResult = classifyWithRules(clipboardText, this.settings);
     if (syncResult.blocked) {
-      this.purgeElement(element);
+      pasteEvent.preventDefault();
+      pasteEvent.stopImmediatePropagation();
+
+      this.purgeAdvancedEditorSafely(element);
       if (this.settings.showWarningOverlay) {
         showBlockWarning(syncResult.matches, this.settings.organizationName);
       }
@@ -127,15 +125,18 @@ export class InputGuard {
       return;
     }
 
-    // Insert optimistic text for async path
-    this.insertText(element, clipboardText);
+    // Support for Monaco/CodeMirror advanced editors:
+    // For benign/async path, we DO NOT preventDefault. We let the browser or editor 
+    // natively insert the text to keep its Virtual DOM in sync.
+    elementPreviousValues.set(element, this.readElementValue(element));
 
     const result = await this.classifyPayload(clipboardText, 'paste', element.tagName.toLowerCase());
     if (result.blocked) {
-      this.purgeElement(element);
+      this.purgeAdvancedEditorSafely(element);
       if (this.settings.showWarningOverlay) {
         showBlockWarning(result.matches, this.settings.organizationName);
       }
+      this.onBlock?.(result, element, 'paste');
       return;
     }
 
@@ -186,7 +187,27 @@ export class InputGuard {
     if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
       return element.value;
     }
-    return element.textContent ?? '';
+    if (element instanceof HTMLElement && element.isContentEditable) {
+      return element.innerText || element.textContent || '';
+    }
+    return '';
+  }
+
+  private purgeAdvancedEditorSafely(element: GuardedElement): void {
+    const isAdvancedEditor = !!element.closest('.monaco-editor, .CodeMirror, .cm-editor');
+    let purged = false;
+
+    if (isAdvancedEditor) {
+      try {
+        purged = document.execCommand('undo');
+      } catch (e) {
+        purged = false;
+      }
+    }
+
+    if (!purged) {
+      this.purgeElement(element);
+    }
   }
 
   private setNativeValue(element: HTMLInputElement | HTMLTextAreaElement, value: string): void {

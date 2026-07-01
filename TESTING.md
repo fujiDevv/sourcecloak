@@ -32,7 +32,8 @@ Use any page with a textarea, text input, or chat box:
 
 | Surface | Example |
 |---------|---------|
-| AI chat | [chatgpt.com](https://chatgpt.com), [claude.ai](https://claude.ai) |
+| AI chat / Web IDEs (Monaco/CodeMirror) | [vscode.dev](https://vscode.dev), [stackblitz.com](https://stackblitz.com) |
+| Standard AI chat | [chatgpt.com](https://chatgpt.com), [claude.ai](https://claude.ai) |
 | Translation | [translate.google.com](https://translate.google.com) |
 | Local sandbox | DevTools console snippet below |
 
@@ -158,6 +159,19 @@ const config = { ACME_INTERNAL_API: "https://internal.acme.corp" };
 ```
 
 **Expected match:** Corporate Signature: ACME_INTERNAL_API
+
+---
+
+## Advanced Editor Support (Monaco/CodeMirror)
+
+SourceCloak has native safe-hooks for advanced editors used in AI chat interfaces and web IDEs.
+To test interception in a virtual DOM environment:
+
+1. Open [vscode.dev](https://vscode.dev) or another Monaco-based editor.
+2. Paste an SSH key or AWS credential.
+3. **Expected:** Paste is blocked instantly (sync tier), the overlay appears, and the editor state does not desync or crash.
+4. Paste benign text.
+5. **Expected:** Paste flows through natively, retaining the editor's syntax highlighting and undo history.
 
 ---
 
