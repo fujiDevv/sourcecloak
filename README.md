@@ -1,11 +1,11 @@
-# SourceCloak Shield
+# SourceCloak
 
 **The first client-side structural defense layer blocking proprietary code exposures before transmission.**
 
-SourceCloak Shield is an enterprise-grade Chrome extension that intercepts sensitive code, credentials, and corporate signatures in text inputs **before** they can reach external cloud tools. All classification runs on-device — blocked payloads never leave the browser.
+SourceCloak is an enterprise-grade Chrome extension that intercepts sensitive code, credentials, and corporate signatures in text inputs **before** they can reach external cloud tools. All classification runs on-device — blocked payloads never leave the browser.
 
 <p align="center">
-  <img src="assets/logo128.png" alt="SourceCloak Shield" width="96" />
+  <img src="assets/logo128.png" alt="SourceCloak" width="128" />
 </p>
 
 <p align="center">
@@ -27,7 +27,7 @@ SourceCloak Shield is an enterprise-grade Chrome extension that intercepts sensi
 
 ## Overview
 
-Engineering teams face constant pressure to prevent proprietary codebase exposure into external systems — AI assistants, translation tools, ticketing platforms, and paste-heavy SaaS surfaces. SourceCloak Shield adds an **air-gapped interception layer** directly in the browser:
+Engineering teams face constant pressure to prevent proprietary codebase exposure into external systems — AI assistants, translation tools, ticketing platforms, and paste-heavy SaaS surfaces. SourceCloak adds an **air-gapped interception layer** directly in the browser:
 
 1. Monitors textareas, inputs, and `contenteditable` fields across active tabs
 2. Classifies pasted and typed payloads using a multi-tier on-device pipeline
@@ -144,7 +144,7 @@ SourceCloak-shield/dist
 
 ### Verify protection
 
-Paste a test SSH key block into any textarea on a SaaS site. SourceCloak Shield should:
+Paste a test SSH key block into any textarea on a SaaS site. SourceCloak should:
 
 - Purge the field immediately
 - Show the **Transmission Blocked** overlay
@@ -209,10 +209,10 @@ No remote servers receive scanned payload content. Hugging Face is contacted onl
 
 Copyright (c) 2026 **Joshua Sarmiento**
 
-SourceCloak Shield is licensed under the [MIT License](./LICENSE).
+SourceCloak is licensed under the [MIT License](./LICENSE).
 
 ---
 
 ## B2B Positioning
 
-SourceCloak Shield is designed as a per-seat B2B browser utility for engineering organizations that need structural, client-side leak prevention without routing employee traffic through a cloud proxy. Policy signatures, domain scope, and audit retention are configurable per deployment.
+SourceCloak is designed as a per-seat B2B browser utility for engineering organizations that need structural, client-side leak prevention without routing employee traffic through a cloud proxy. Policy signatures, domain scope, and audit retention are configurable per deployment.

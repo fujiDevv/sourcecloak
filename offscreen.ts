@@ -1,3 +1,4 @@
+// @ts-ignore - transformers v4 currently has broken type exports for pipeline
 import { pipeline, env } from '@huggingface/transformers';
 import { classifyWithRules, mergeClassificationResults } from './src/classifier';
 import { classifyWithGeminiNano } from './src/ai';
