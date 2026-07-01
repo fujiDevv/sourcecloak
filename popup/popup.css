@@ -185,7 +185,30 @@ body {
 .switch input:checked + .slider { background: #ffffff; }
 .switch input:checked + .slider:before { transform: translateX(18px); background: #000000; }
 
-.popup-footer { display: flex; justify-content: stretch; }
+.popup-footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.explore-pro {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+  padding: 4px 0 0;
+  cursor: pointer;
+  text-align: center;
+}
+
+.explore-pro:hover {
+  color: var(--text);
+}
+
+.explore-pro.hidden {
+  display: none;
+}
 
 .btn-secondary {
   width: 100%;

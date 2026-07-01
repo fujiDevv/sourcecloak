@@ -124,6 +124,9 @@ export const extensionApi = {
     query(queryInfo: chrome.tabs.QueryInfo): Promise<chrome.tabs.Tab[]> {
       return toPromise<chrome.tabs.Tab[]>(getExtensionRoot()?.tabs, 'query', [queryInfo]);
     },
+    create(createProperties: chrome.tabs.CreateProperties): Promise<chrome.tabs.Tab> {
+      return toPromise<chrome.tabs.Tab>(getExtensionRoot()?.tabs, 'create', [createProperties]);
+    },
     sendMessage<T = unknown>(tabId: number, message: unknown): Promise<T> {
       return toPromise<T>(getExtensionRoot()?.tabs, 'sendMessage', [tabId, message]);
     }

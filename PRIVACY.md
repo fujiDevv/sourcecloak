@@ -172,10 +172,8 @@ This policy may be updated to reflect product changes. Material updates will be 
 
 For privacy questions or data-handling concerns:
 
-- Open an issue in the project repository
+- Email us at support@sourcecloak.com
 - Label security-sensitive reports appropriately
-
-**Repository:** [contextual-pet-extension](https://github.com/joshuasarmiento/contextual-pet-extension)
 
 ---
 

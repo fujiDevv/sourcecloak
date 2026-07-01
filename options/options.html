@@ -19,16 +19,13 @@
       </div>
       <nav>
         <button class="nav-btn active" data-tab="policy">Protection Policy</button>
-        <button class="nav-btn" data-tab="signatures">Corporate Signatures</button>
-        <button class="nav-btn" data-tab="domains">Domain Scope</button>
+        <button class="nav-btn nav-pro-only" data-tab="signatures">Corporate Signatures</button>
+        <button class="nav-btn nav-pro-only" data-tab="domains">Domain Scope</button>
         <button class="nav-btn" data-tab="audit">Audit Log</button>
-        <button class="nav-btn" data-tab="deployment">Deployment</button>
+        <button class="nav-btn nav-pro-only" data-tab="deployment">Deployment</button>
+        <button type="button" class="nav-btn nav-upgrade" data-open-halo>Upgrade</button>
       </nav>
       <div class="sidebar-footer">
-        <a href="https://github.com/fujiDevv/sourcecloak" target="_blank" style="color: var(--muted); text-decoration: none; display: flex; align-items: center; gap: 6px; margin-bottom: 12px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
-          Report Issues
-        </a>
         <span id="version-tag">v1.0.0</span>
       </div>
     </aside>
@@ -65,8 +62,8 @@
             </label>
           </article>
 
-          <article class="card">
-            <h3>Classification Stack</h3>
+          <article class="card card-pro-only" id="card-advanced-stack">
+            <h3>Advanced classifiers</h3>
             <label class="field checkbox-field">
               <input id="use-onnx" type="checkbox">
               <span>ONNX WASM classifier (offscreen)</span>
@@ -75,10 +72,20 @@
               <input id="use-gemini" type="checkbox">
               <span>Gemini Nano semantic review</span>
             </label>
+          </article>
+
+          <article class="card card-community-only halo-teaser" data-open-halo>
+            <h3>4-Tier Pipeline</h3>
+            <p class="hint">You're protected with Tier 1–2 on AI chat sites. Pro adds ONNX semantic depth, custom signatures, and deployment tooling.</p>
+            <button type="button" class="btn-halo-teaser">See what Pro unlocks</button>
+          </article>
+
+          <article class="card">
+            <h3>Sensitivity</h3>
             <label class="field">
-              <span>Sensitivity</span>
+              <span>Detection threshold</span>
               <input id="sensitivity" type="range" min="0" max="100" step="1">
-              <output id="sensitivity-value">65</output>
+              <output id="sensitivity-value">45</output>
             </label>
           </article>
 
@@ -175,6 +182,52 @@
       </footer>
     </main>
   </div>
+
+  <div id="halo-overlay" class="halo-overlay hidden" aria-hidden="true">
+    <div class="halo-card" role="dialog" aria-labelledby="halo-title" aria-modal="true">
+      <button type="button" id="halo-close" class="halo-close" aria-label="Close">×</button>
+      <div class="halo-glow" aria-hidden="true"></div>
+      <div class="halo-card-inner">
+        <img src="../assets/logo128.png" alt="" class="halo-logo" width="56" height="56">
+        <p class="halo-eyebrow">SourceCloak Pro</p>
+        <h2 id="halo-title" class="halo-title">The full defense stack, on-device</h2>
+        <p class="halo-lead">Community already blocks credentials and leaks on AI chat tools. Pro adds semantic classification and policy control — still zero telemetry.</p>
+
+        <div class="halo-tiers">
+          <div class="halo-tier halo-tier-active">
+            <span class="halo-tier-num">1–2</span>
+            <span class="halo-tier-label">Regex + Token</span>
+            <span class="halo-tier-note">Included</span>
+          </div>
+          <div class="halo-tier halo-tier-pro">
+            <span class="halo-tier-num">3</span>
+            <span class="halo-tier-label">ONNX WASM</span>
+          </div>
+          <div class="halo-tier halo-tier-pro">
+            <span class="halo-tier-num">4</span>
+            <span class="halo-tier-label">Gemini Nano</span>
+          </div>
+        </div>
+
+        <ul class="halo-features">
+          <li>ONNX + Gemini Nano classifiers</li>
+          <li>Custom regex &amp; corporate signatures</li>
+          <li>Monitored and trusted domain lists</li>
+          <li>Policy export / import for teams</li>
+          <li>Full audit history (500 events)</li>
+        </ul>
+
+        <div class="halo-actions">
+          <button type="button" id="halo-buy" class="btn-primary halo-cta">Buy Pro — <span id="halo-price">$24</span> lifetime</button>
+          <button type="button" id="halo-login" class="btn-secondary">Already paid? Log in</button>
+        </div>
+        <p id="halo-status" class="halo-status"></p>
+        <p id="halo-refund-notice" class="halo-footnote halo-footnote-muted"></p>
+        <p class="halo-footnote">Secure checkout via <a href="https://extensionpay.com" target="_blank" rel="noopener noreferrer">ExtensionPay</a> · Stripe · <a href="https://sourcecloak.com/terms" target="_blank" rel="noopener noreferrer">Terms</a></p>
+      </div>
+    </div>
+  </div>
+
   <script type="module" src="options.ts"></script>
 </body>
 </html>

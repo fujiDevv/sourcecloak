@@ -194,7 +194,7 @@ If you discover a vulnerability that could weaken on-device interception or expo
 
 ## License
 
-By contributing to SourceCloak, you agree that your contributions will be licensed under the [MIT License](./LICENSE), copyright (c) 2026 Joshua Sarmiento.
+By contributing to SourceCloak, you agree that your contributions will be licensed under the [MIT License](./LICENSE), copyright (c) 2026 FujiDevv.
 
 ---
 

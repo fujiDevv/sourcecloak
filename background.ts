@@ -1,15 +1,39 @@
-import { DEFAULT_SETTINGS, MAX_AUDIT_ENTRIES, STORAGE_KEYS } from './src/constants';
+import { DEFAULT_SETTINGS, STORAGE_KEYS } from './src/constants';
 import { classifyWithRules } from './src/classifier';
+import { editionFromPaid, getAuditLimit, sanitizeSettings } from './src/edition';
+import {
+  createExtPay,
+  isProUser,
+  openProLoginPage,
+  openProPaymentPage,
+  startExtPayBackground,
+} from './src/extpay-client';
 import { extensionApi, supportsOffscreenDocuments } from './src/platform';
 import { isDomainMatch } from './src/utils';
-import type { AuditEntry, ClassificationResult, SourceCloakSettings, SourceCloakStats } from './src/types';
+import type { AuditEntry, ClassificationResult, Edition, SourceCloakSettings, SourceCloakStats } from './src/types';
+
+startExtPayBackground();
+
+const extpay = createExtPay();
+extpay.onPaid.addListener(async () => {
+  const settings = await getSettings();
+  await extensionApi.storage.local.set({ [STORAGE_KEYS.SETTINGS]: settings });
+});
 
 const supportsOffscreen = supportsOffscreenDocuments();
 let creatingOffscreen: Promise<void> | null = null;
 
+async function getEdition(): Promise<Edition> {
+  return editionFromPaid(await isProUser());
+}
+
 async function getSettings(): Promise<SourceCloakSettings> {
-  const data = await extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.SETTINGS);
-  return { ...DEFAULT_SETTINGS, ...(data[STORAGE_KEYS.SETTINGS] as Partial<SourceCloakSettings> | undefined) };
+  const [data, edition] = await Promise.all([
+    extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.SETTINGS),
+    getEdition(),
+  ]);
+  const raw = { ...DEFAULT_SETTINGS, ...(data[STORAGE_KEYS.SETTINGS] as Partial<SourceCloakSettings> | undefined) };
+  return sanitizeSettings(raw, edition);
 }
 
 async function getStats(): Promise<SourceCloakStats> {
@@ -31,9 +55,10 @@ async function appendAuditEntry(entry: AuditEntry): Promise<void> {
   const existing = (data[STORAGE_KEYS.AUDIT_LOG] as AuditEntry[] | undefined) ?? [];
   const cutoff = Date.now() - (settings.auditRetentionDays * 24 * 60 * 60 * 1000);
   
+  const edition = await getEdition();
   const next = [entry, ...existing]
     .filter(e => e.timestamp > cutoff)
-    .slice(0, MAX_AUDIT_ENTRIES);
+    .slice(0, getAuditLimit(edition));
     
   await extensionApi.storage.local.set({ [STORAGE_KEYS.AUDIT_LOG]: next });
 }
@@ -142,6 +167,8 @@ extensionApi.runtime.onInstalled?.addListener(async (details) => {
       },
       [STORAGE_KEYS.AUDIT_LOG]: []
     });
+    const optionsUrl = extensionApi.runtime.getURL('options/options.html?welcome=1');
+    await extensionApi.tabs.create({ url: optionsUrl });
   }
 
   const settings = await getSettings();
@@ -167,9 +194,46 @@ extensionApi.storage.onChanged?.addListener((changes) => {
 
 extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => {
   if (message.type === 'get-settings') {
-    getSettings().then((settings) => sendResponse({ success: true, settings })).catch((err: Error) => {
-      sendResponse({ success: false, error: err.message });
-    });
+    Promise.all([getSettings(), getEdition()])
+      .then(([settings, edition]) => sendResponse({ success: true, settings, edition }))
+      .catch((err: Error) => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
+  if (message.type === 'get-edition') {
+    getEdition()
+      .then((edition) => sendResponse({ success: true, edition }))
+      .catch((err: Error) => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
+  if (message.type === 'get-payment-user') {
+    createExtPay().getUser()
+      .then(async (user) => {
+        const edition = editionFromPaid(user.paid);
+        sendResponse({
+          success: true,
+          edition,
+          email: user.email,
+          paidAt: user.paidAt?.toISOString() ?? null,
+          plan: user.plan,
+        });
+      })
+      .catch((err: Error) => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
+  if (message.type === 'open-payment-page') {
+    openProPaymentPage()
+      .then(() => sendResponse({ success: true }))
+      .catch((err: Error) => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
+  if (message.type === 'open-login-page') {
+    openProLoginPage()
+      .then(() => sendResponse({ success: true }))
+      .catch((err: Error) => sendResponse({ success: false, error: err.message }));
     return true;
   }
 
@@ -181,8 +245,14 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
   }
 
   if (message.type === 'get-audit-log') {
-    extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.AUDIT_LOG)
-      .then((data) => sendResponse({ success: true, entries: data[STORAGE_KEYS.AUDIT_LOG] ?? [] }))
+    Promise.all([
+      extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.AUDIT_LOG),
+      getEdition(),
+    ])
+      .then(([data, edition]) => {
+        const entries = (data[STORAGE_KEYS.AUDIT_LOG] as AuditEntry[] | undefined) ?? [];
+        sendResponse({ success: true, entries: entries.slice(0, getAuditLimit(edition)), edition });
+      })
       .catch((err: Error) => sendResponse({ success: false, error: err.message }));
     return true;
   }

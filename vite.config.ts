@@ -1,5 +1,6 @@
 import { defineConfig, type Plugin, type ViteDevServer } from 'vite';
 import { crx } from '@crxjs/vite-plugin';
+import obfuscator from 'rollup-plugin-obfuscator';
 import manifest from './src/manifest.json';
 import { resolve } from 'path';
 import fs from 'fs';
@@ -41,7 +42,22 @@ function wasmPlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [crx({ manifest }), wasmPlugin()],
+  plugins: [
+    crx({ manifest }),
+    wasmPlugin(),
+    obfuscator({
+      global: false,
+      include: ['**/*.ts'],
+      exclude: ['**/node_modules/**', '**/extpay/**', '**/extpay-content.ts'],
+      options: {
+        compact: true,
+        controlFlowFlattening: true,
+        deadCodeInjection: true,
+        stringArray: true,
+        stringArrayEncoding: ['base64'],
+      }
+    })
+  ],
   build: {
     modulePreload: false,
     assetsInlineLimit: 0,

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SourceCloak",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Air-gapped client-side defense blocking proprietary code exposures before transmission.",
   "permissions": [
     "storage",
@@ -20,6 +20,11 @@
       "js": ["content.ts"],
       "run_at": "document_start",
       "all_frames": true
+    },
+    {
+      "matches": ["https://extensionpay.com/*"],
+      "js": ["src/extpay-content.ts"],
+      "run_at": "document_start"
     }
   ],
   "action": {
@@ -52,6 +57,6 @@
     "value": "same-origin"
   },
   "content_security_policy": {
-    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.xethub.hf.co"
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://extensionpay.com https://*.extensionpay.com https://huggingface.co https://*.huggingface.co https://*.hf.co https://*.xethub.hf.co"
   }
 }

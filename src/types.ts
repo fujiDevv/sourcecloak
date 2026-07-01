@@ -61,6 +61,8 @@ export interface SourceCloakStats {
   blocksByCategory: Record<string, number>;
 }
 
+export type Edition = 'community' | 'pro';
+
 export type SourceCloakMessage =
   | { type: 'classify-payload'; text: string; hostname: string; url: string; eventType: 'paste' | 'input'; elementTag: string }
   | { type: 'classification-result'; result: ClassificationResult }
@@ -68,6 +70,10 @@ export type SourceCloakMessage =
   | { type: 'get-settings' }
   | { type: 'get-stats' }
   | { type: 'get-audit-log' }
+  | { type: 'get-edition' }
+  | { type: 'get-payment-user' }
+  | { type: 'open-payment-page' }
+  | { type: 'open-login-page' }
   | { type: 'check-model-status' }
   | { type: 'update-model-progress'; state: string; progress: number }
   | { type: 'run-offscreen-classification'; text: string; settings: SourceCloakSettings }
