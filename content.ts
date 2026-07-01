@@ -7,12 +7,18 @@ import { extensionApi, getRuntimeUrl } from './src/platform';
 let currentSettings: SourceCloakSettings = { ...DEFAULT_SETTINGS };
 let inputGuard: InputGuard | null = null;
 let isOrphaned = false;
+let mainWorldInjected = false;
 
-(function injectMainWorldBridge() {
+/** Inject only when Tier 4 (Gemini Nano) is enabled — avoids running page scripts on every site. */
+function ensureMainWorldBridge(): void {
+  if (mainWorldInjected || !currentSettings.useGeminiNano) return;
+
   try {
     if (!extensionApi.runtime.id) return;
     if (window !== window.top) return;
     if (document.documentElement.tagName.toLowerCase() !== 'html') return;
+
+    mainWorldInjected = true;
 
     const channel = new MessageChannel();
     setMainWorldPort(channel.port1);
@@ -23,11 +29,16 @@ let isOrphaned = false;
       script.remove();
       window.postMessage({ type: 'SOURCECLOAK_AI_INIT_PORT' }, '*', [channel.port2]);
     };
+    script.onerror = () => {
+      mainWorldInjected = false;
+      console.warn('[SourceCloak] Main world bridge script failed to load');
+    };
     (document.head || document.documentElement).appendChild(script);
   } catch (err) {
+    mainWorldInjected = false;
     console.warn('[SourceCloak] Main world bridge injection failed:', err);
   }
-})();
+}
 
 function checkContextOrCleanup(): boolean {
   if (isOrphaned) return false;
@@ -113,13 +124,17 @@ function handleStorageChanged(changes: Record<string, chrome.storage.StorageChan
   const next = changes[STORAGE_KEYS.SETTINGS].newValue as SourceCloakSettings | undefined;
   if (!next) return;
   currentSettings = { ...DEFAULT_SETTINGS, ...next };
+  ensureMainWorldBridge();
   ensureGuard();
 }
 
 function handleRuntimeMessage(message: { type?: string }): boolean {
   if (!checkContextOrCleanup()) return false;
   if (message.type === 'settings-updated') {
-    loadSettings().then(() => ensureGuard());
+    loadSettings().then(() => {
+      ensureMainWorldBridge();
+      ensureGuard();
+    });
   }
   return false;
 }
@@ -127,6 +142,7 @@ function handleRuntimeMessage(message: { type?: string }): boolean {
 async function init(): Promise<void> {
   if (!checkContextOrCleanup()) return;
   await loadSettings();
+  ensureMainWorldBridge();
   ensureGuard();
   extensionApi.storage.onChanged?.addListener(handleStorageChanged);
   extensionApi.runtime.onMessage?.addListener(handleRuntimeMessage);

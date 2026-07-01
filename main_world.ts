@@ -1,4 +1,11 @@
 (() => {
+  try {
+    initMainWorldBridge();
+  } catch (err) {
+    console.warn('[SourceCloak] Main world bridge failed to initialize:', err);
+  }
+
+  function initMainWorldBridge(): void {
   function getLanguageModel(): {
     availability?: (opts?: unknown) => Promise<string>;
     capabilities?: (opts?: unknown) => Promise<{ available: string }>;
@@ -115,4 +122,5 @@
       port.start();
     }
   });
+  }
 })();

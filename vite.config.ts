@@ -48,7 +48,12 @@ export default defineConfig({
     obfuscator({
       global: false,
       include: ['**/*.ts'],
-      exclude: ['**/node_modules/**', '**/extpay/**', '**/extpay-content.ts'],
+      exclude: [
+        '**/node_modules/**',
+        '**/extpay/**',
+        '**/extpay-content.ts',
+        '**/main_world.ts',
+      ],
       options: {
         compact: true,
         controlFlowFlattening: true,
