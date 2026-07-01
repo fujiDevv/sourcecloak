@@ -13,97 +13,84 @@ const OVERLAY_CSS = `
   align-items: center;
   justify-content: center;
   background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
+  backdrop-filter: blur(4px);
   font-family: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
 }
 #${OVERLAY_ID} * { box-sizing: border-box; }
 #${OVERLAY_ID} .shield-panel {
-  width: min(520px, calc(100vw - 32px));
+  width: min(420px, calc(100vw - 32px));
   border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.15);
   background: #0a0a0a;
-  color: #ffffff;
-  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
   overflow: hidden;
+  color: #ffffff;
 }
 #${OVERLAY_ID} .shield-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 24px 24px 12px;
+  padding: 24px 24px 12px 24px;
 }
 #${OVERLAY_ID} .shield-icon {
+  padding: 6px;
   width: 40px;
   height: 40px;
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
+  border-radius: 12px;
   background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-  font-size: 20px;
+  display: block;
+  object-fit: contain;
 }
-#${OVERLAY_ID} h2 {
-  margin: 0;
-  font-size: 20px;
+#${OVERLAY_ID} .shield-title {
+  font-size: 16px;
   font-weight: 600;
   color: #ffffff;
+  margin: 0;
 }
 #${OVERLAY_ID} .shield-subtitle {
-  margin: 4px 0 0;
-  font-size: 13px;
+  font-size: 12px;
   color: #a3a3a3;
+  margin: 4px 0 0 0;
 }
 #${OVERLAY_ID} .shield-body {
-  padding: 12px 24px 20px;
+  padding: 0 24px 24px 24px;
 }
-#${OVERLAY_ID} .shield-alert {
+#${OVERLAY_ID} .match-card {
+  border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.15);
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 10px;
-  padding: 14px 16px;
-  font-size: 13px;
-  line-height: 1.5;
-  color: #e5e5e5;
-}
-#${OVERLAY_ID} .match-list {
-  margin: 16px 0 0;
-  padding: 0;
-  list-style: none;
-}
-#${OVERLAY_ID} .match-list li {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-  font-size: 13px;
-}
-#${OVERLAY_ID} .match-list li:last-child { border-bottom: none; }
-#${OVERLAY_ID} .match-label { color: #ffffff; }
-#${OVERLAY_ID} .match-confidence {
+  background: #000000;
+  padding: 16px;
+  font-size: 12px;
+  font-family: "IBM Plex Mono", monospace;
   color: #a3a3a3;
-  font-variant-numeric: tabular-nums;
+  margin-bottom: 12px;
+}
+#${OVERLAY_ID} .match-card:last-child {
+  margin-bottom: 0;
+}
+#${OVERLAY_ID} .match-title {
+  color: #ffffff;
+  margin-bottom: 8px;
 }
 #${OVERLAY_ID} .shield-footer {
+  padding: 0 24px 24px 24px;
   display: flex;
   justify-content: flex-end;
-  gap: 10px;
-  padding: 16px 24px 24px;
 }
 #${OVERLAY_ID} button {
   border: 1px solid rgba(255, 255, 255, 0.15);
   border-radius: 8px;
-  padding: 10px 20px;
-  font-size: 13px;
+  background: #ffffff;
+  color: #000000;
+  padding: 8px 16px;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s;
 }
-#${OVERLAY_ID} .btn-primary {
-  background: #ffffff;
-  color: #000000;
+#${OVERLAY_ID} button:hover {
+  background: #e5e5e5;
 }
-#${OVERLAY_ID} .btn-primary:hover { background: #e5e5e5; }
 `;
 
 function ensureStyles(): void {
@@ -124,31 +111,27 @@ export function showBlockWarning(matches: ThreatMatch[], organizationName: strin
   overlay.setAttribute('aria-modal', 'true');
   overlay.setAttribute('aria-label', 'SourceCloak security warning');
 
-  const matchItems = matches.slice(0, 5).map((match) => `
-    <li>
-      <span class="match-label">${escapeHtml(match.label)}</span>
-      <span class="match-confidence">${Math.round(match.confidence * 100)}%</span>
-    </li>
+  const matchItems = matches.slice(0, 3).map((match) => `
+    <div class="match-card">
+      <div class="match-title">${escapeHtml(match.label)}</div>
+      <div>confidence: ${(match.confidence).toFixed(2)}</div>
+    </div>
   `).join('');
 
   overlay.innerHTML = `
     <div class="shield-panel">
       <div class="shield-header">
-        <div class="shield-icon">⛨</div>
+        <img class="shield-icon" src="${chrome.runtime.getURL('assets/logo128.png')}" alt="SourceCloak" />
         <div>
-          <h2>Transmission Blocked</h2>
-          <p class="shield-subtitle">SourceCloak · ${escapeHtml(organizationName)}</p>
+          <h3 class="shield-title">Transmission Blocked</h3>
+          <p class="shield-subtitle">SourceCloak intercepted this paste locally</p>
         </div>
       </div>
       <div class="shield-body">
-        <div class="shield-alert">
-          Proprietary or sensitive material was intercepted before it could leave this device.
-          The input field has been purged locally. No network request was made.
-        </div>
-        <ul class="match-list">${matchItems}</ul>
+        ${matchItems}
       </div>
       <div class="shield-footer">
-        <button class="btn-primary" data-action="dismiss">Acknowledge</button>
+        <button data-action="dismiss">Acknowledge</button>
       </div>
     </div>
   `;
