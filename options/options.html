@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SourceCloak Policy Console</title>
+  <link rel="stylesheet" href="options.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="console">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-icon">⛨</div>
+        <div>
+          <h1>SourceCloak</h1>
+          <p>Policy Console</p>
+        </div>
+      </div>
+      <nav>
+        <button class="nav-btn active" data-tab="policy">Protection Policy</button>
+        <button class="nav-btn" data-tab="signatures">Corporate Signatures</button>
+        <button class="nav-btn" data-tab="domains">Domain Scope</button>
+        <button class="nav-btn" data-tab="audit">Audit Log</button>
+      </nav>
+      <div class="sidebar-footer">
+        <span id="version-tag">v1.0.0</span>
+      </div>
+    </aside>
+
+    <main class="main">
+      <section id="tab-policy" class="tab active">
+        <header>
+          <h2>Protection Policy</h2>
+          <p>Configure on-device interception before any cloud tool can receive pasted payloads.</p>
+        </header>
+
+        <div class="card-grid">
+          <article class="card">
+            <h3>Master Switch</h3>
+            <label class="field checkbox-field">
+              <input id="enabled" type="checkbox">
+              <span>Enable SourceCloak protection</span>
+            </label>
+          </article>
+
+          <article class="card">
+            <h3>Interception</h3>
+            <label class="field checkbox-field">
+              <input id="block-paste" type="checkbox">
+              <span>Block high-risk paste events</span>
+            </label>
+            <label class="field checkbox-field">
+              <input id="block-input" type="checkbox">
+              <span>Monitor continuous typing/input</span>
+            </label>
+            <label class="field checkbox-field">
+              <input id="show-warning" type="checkbox">
+              <span>Show secure warning overlay</span>
+            </label>
+          </article>
+
+          <article class="card">
+            <h3>Classification Stack</h3>
+            <label class="field checkbox-field">
+              <input id="use-onnx" type="checkbox">
+              <span>ONNX WASM classifier (offscreen)</span>
+            </label>
+            <label class="field checkbox-field">
+              <input id="use-gemini" type="checkbox">
+              <span>Gemini Nano semantic review</span>
+            </label>
+            <label class="field">
+              <span>Sensitivity</span>
+              <input id="sensitivity" type="range" min="0" max="100" step="1">
+              <output id="sensitivity-value">65</output>
+            </label>
+          </article>
+
+          <article class="card">
+            <h3>Organization</h3>
+            <label class="field">
+              <span>Organization Name</span>
+              <input id="organization-name" type="text" placeholder="Acme Engineering">
+            </label>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-signatures" class="tab">
+        <header>
+          <h2>Corporate Signatures</h2>
+          <p>Add internal package prefixes, config markers, or regex signatures unique to your codebase.</p>
+        </header>
+        <div class="card">
+          <label class="field">
+            <span>Custom Regex Patterns (one per line)</span>
+            <textarea id="custom-patterns" rows="6" placeholder="com\.acme\.internal\.&#10;@acme/platform-sdk"></textarea>
+          </label>
+          <label class="field">
+            <span>Corporate Config Signatures (one per line)</span>
+            <textarea id="corporate-signatures" rows="6" placeholder="ACME_INTERNAL_API&#10;corp-settings.json"></textarea>
+          </label>
+        </div>
+      </section>
+
+      <section id="tab-domains" class="tab">
+        <header>
+          <h2>Domain Scope</h2>
+          <p>Limit monitoring to high-risk SaaS surfaces or exclude trusted internal tools.</p>
+        </header>
+        <div class="card-grid">
+          <article class="card">
+            <h3>Monitored Domains</h3>
+            <p class="hint">Leave empty to monitor all domains. Otherwise only listed hosts are scanned.</p>
+            <textarea id="monitored-domains" rows="8" placeholder="chat.openai.com&#10;claude.ai&#10;translate.google.com"></textarea>
+          </article>
+          <article class="card">
+            <h3>Trusted Domains</h3>
+            <p class="hint">Hosts in this list bypass all scanning.</p>
+            <textarea id="trusted-domains" rows="8" placeholder="github.com&#10;localhost"></textarea>
+          </article>
+        </div>
+      </section>
+
+      <section id="tab-audit" class="tab">
+        <header>
+          <h2>Audit Log</h2>
+          <p>Local-only intercept history. No telemetry leaves the device.</p>
+        </header>
+        <div class="card">
+          <table class="audit-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Host</th>
+                <th>Event</th>
+                <th>Result</th>
+                <th>Match</th>
+              </tr>
+            </thead>
+            <tbody id="audit-body">
+              <tr><td colspan="5" class="empty">Loading audit log...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <footer class="action-bar">
+        <button id="save-settings" class="btn-primary">Save Policy</button>
+        <span id="save-status" class="save-status"></span>
+      </footer>
+    </main>
+  </div>
+  <script type="module" src="options.ts"></script>
+</body>
+</html>

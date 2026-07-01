@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SourceCloak</title>
+  <link rel="stylesheet" href="popup.css">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="popup-shell">
+    <header class="popup-header">
+      <div class="brand-mark">⛨</div>
+      <div>
+        <h1>SourceCloak</h1>
+        <p>Air-gapped leak interceptor</p>
+      </div>
+      <div id="status-pill" class="status-pill active">Active</div>
+    </header>
+
+    <section class="metric-grid">
+      <article class="metric-card">
+        <span class="metric-label">Scans</span>
+        <strong id="metric-scans">0</strong>
+      </article>
+      <article class="metric-card danger">
+        <span class="metric-label">Blocks</span>
+        <strong id="metric-blocks">0</strong>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-row">
+        <span>Protection</span>
+        <label class="switch">
+          <input id="toggle-enabled" type="checkbox" checked>
+          <span class="slider"></span>
+        </label>
+      </div>
+      <div class="panel-row">
+        <span>ONNX Classifier</span>
+        <span id="model-status" class="badge">Checking</span>
+      </div>
+      <div class="panel-row">
+        <span>Gemini Nano</span>
+        <span id="nano-status" class="badge">Checking</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <h2>Recent Intercepts</h2>
+      <ul id="recent-list" class="recent-list">
+        <li class="empty">No intercepts recorded yet.</li>
+      </ul>
+    </section>
+
+    <footer class="popup-footer">
+      <button id="open-options" class="btn-secondary">Policy Console</button>
+    </footer>
+  </div>
+  <script type="module" src="popup.ts"></script>
+</body>
+</html>

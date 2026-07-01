@@ -1,0 +1,26 @@
+{
+  "name": "sourcecloak",
+  "version": "1.0.0",
+  "description": "Client-side structural defense layer blocking proprietary code exposures before transmission.",
+  "author": "Joshua Sarmiento",
+  "license": "MIT",
+  "type": "module",
+  "dependencies": {
+    "@huggingface/transformers": "^4.2.0"
+  },
+  "devDependencies": {
+    "@crxjs/vite-plugin": "^2.0.0-beta.33",
+    "@types/chrome": "^0.0.268",
+    "@types/node": "^26.0.1",
+    "typescript": "^5.4.5",
+    "vitest": "^4.1.9"
+  },
+  "scripts": {
+    "type-check": "node node_modules/typescript/bin/tsc --noEmit",
+    "test": "vitest run tests",
+    "dev": "vite build --watch",
+    "build": "vite build && node scripts/postbuild.mjs",
+    "extension": "npm run build",
+    "verify": "npm run type-check && npm run test"
+  }
+}

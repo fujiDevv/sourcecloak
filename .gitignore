@@ -1,0 +1,7 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# Chrome refuses to load unpacked extensions containing "_" prefixed paths.
+# Always load the built output: seccode-shield/dist

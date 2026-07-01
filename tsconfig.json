@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true
+  },
+  "include": [
+    "src/**/*",
+    "content.ts",
+    "main_world.ts",
+    "background.ts",
+    "popup/popup.ts",
+    "offscreen.ts",
+    "options/options.ts",
+    "tests/**/*"
+  ]
+}
