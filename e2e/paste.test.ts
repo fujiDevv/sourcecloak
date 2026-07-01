@@ -1,71 +1,102 @@
 import { test, expect } from './fixtures';
+import {
+  AWS_CREDENTIAL_PASTE,
+  BENIGN_PASTE,
+  injectFixture,
+  pasteFromClipboard,
+} from './helpers';
 
 test.describe.configure({ mode: 'serial' });
 
-test.describe('SourceCloak Interception', () => {
-  test('blocks credential on paste', async ({ page, context }) => {
-    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-    // Navigate to a real page so content script is injected
-    await page.goto('https://example.com');
-    await page.evaluate(() => {
-      document.body.innerHTML = '<textarea id="target" style="width: 100%; height: 200px;"></textarea>';
-    });
+const TEXTAREA_FIXTURE =
+  '<textarea id="target" style="width: 100%; height: 200px;"></textarea>';
 
-    // Give the content script a moment to attach
-    await page.waitForTimeout(500);
+const MONACO_FIXTURE = `
+<div class="monaco-editor" style="border: 1px solid #ccc; min-height: 200px;">
+  <div class="monaco-scrollable-element">
+    <div id="monaco-target" contenteditable="true" class="inputarea" style="min-height: 200px; padding: 8px;"></div>
+  </div>
+</div>`;
+
+const CODEMIRROR_FIXTURE = `
+<div class="cm-editor" style="border: 1px solid #ccc; min-height: 200px;">
+  <div class="cm-scroller">
+    <div id="cm-target" contenteditable="true" class="cm-content" style="min-height: 200px; padding: 8px;"></div>
+  </div>
+</div>`;
+
+test.describe('SourceCloak Interception', () => {
+  test.beforeEach(async ({ context }) => {
+    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
+  });
+
+  test('blocks credential on textarea paste', async ({ page }) => {
+    await injectFixture(page, TEXTAREA_FIXTURE);
 
     const textarea = page.locator('#target');
-    await textarea.focus();
+    await pasteFromClipboard(page, textarea, AWS_CREDENTIAL_PASTE);
 
-    // Paste an AWS key
-    const awsKey = `AWS_ACCESS_KEY_ID=AKIAIOSFODNN7EXAMPLE\naws_secret_access_key=wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY`;
-
-    await page.evaluate(async (key) => {
-      await navigator.clipboard.writeText(key);
-    }, awsKey);
-
-    const isMac = process.platform === 'darwin';
-    await textarea.press(isMac ? 'Meta+v' : 'Control+v');
-
-    // Wait for the overlay to appear
     const overlay = page.locator('#sourcecloak-warning');
     await expect(overlay).toBeVisible();
-
-    // Check that the warning text is present
     await expect(overlay).toContainText('Transmission Blocked');
     await expect(overlay).toContainText('AWS');
-
-    // Check that the textarea value is empty
     await expect(textarea).toHaveValue('');
   });
 
-  test('allows benign paste', async ({ page, context }) => {
-    await context.grantPermissions(['clipboard-read', 'clipboard-write']);
-    await page.goto('https://example.com');
-    await page.evaluate(() => {
-      document.body.innerHTML = '<textarea id="target" style="width: 100%; height: 200px;"></textarea>';
-    });
-    
-    // Give the content script a moment to attach
-    await page.waitForTimeout(500);
+  test('allows benign textarea paste', async ({ page }) => {
+    await injectFixture(page, TEXTAREA_FIXTURE);
 
     const textarea = page.locator('#target');
-    await textarea.focus();
+    await pasteFromClipboard(page, textarea, BENIGN_PASTE);
 
-    const benignText = 'Hello, can you help me write a Python script?';
-    
-    await page.evaluate(async (text) => {
-      await navigator.clipboard.writeText(text);
-    }, benignText);
-
-    const isMac = process.platform === 'darwin';
-    await textarea.press(isMac ? 'Meta+v' : 'Control+v');
-
-    // No overlay should appear
     const overlay = page.locator('#sourcecloak-warning');
     await expect(overlay).not.toBeVisible();
+    await expect(textarea).toHaveValue(BENIGN_PASTE);
+  });
 
-    // The text SHOULD be in the textarea
-    await expect(textarea).toHaveValue(benignText);
+  test('blocks credential on Monaco contenteditable paste', async ({ page }) => {
+    await injectFixture(page, MONACO_FIXTURE);
+
+    const editor = page.locator('#monaco-target');
+    await pasteFromClipboard(page, editor, AWS_CREDENTIAL_PASTE);
+
+    const overlay = page.locator('#sourcecloak-warning');
+    await expect(overlay).toBeVisible();
+    await expect(overlay).toContainText('Transmission Blocked');
+    await expect(editor).toHaveText('');
+  });
+
+  test('allows benign Monaco contenteditable paste', async ({ page }) => {
+    await injectFixture(page, MONACO_FIXTURE);
+
+    const editor = page.locator('#monaco-target');
+    await pasteFromClipboard(page, editor, BENIGN_PASTE);
+
+    const overlay = page.locator('#sourcecloak-warning');
+    await expect(overlay).not.toBeVisible();
+    await expect(editor).toContainText(BENIGN_PASTE);
+  });
+
+  test('blocks credential on CodeMirror contenteditable paste', async ({ page }) => {
+    await injectFixture(page, CODEMIRROR_FIXTURE);
+
+    const editor = page.locator('#cm-target');
+    await pasteFromClipboard(page, editor, AWS_CREDENTIAL_PASTE);
+
+    const overlay = page.locator('#sourcecloak-warning');
+    await expect(overlay).toBeVisible();
+    await expect(overlay).toContainText('Transmission Blocked');
+    await expect(editor).toHaveText('');
+  });
+
+  test('allows benign CodeMirror contenteditable paste', async ({ page }) => {
+    await injectFixture(page, CODEMIRROR_FIXTURE);
+
+    const editor = page.locator('#cm-target');
+    await pasteFromClipboard(page, editor, BENIGN_PASTE);
+
+    const overlay = page.locator('#sourcecloak-warning');
+    await expect(overlay).not.toBeVisible();
+    await expect(editor).toContainText(BENIGN_PASTE);
   });
 });

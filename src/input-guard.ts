@@ -136,11 +136,11 @@ export class InputGuard {
       if (this.settings.showWarningOverlay) {
         showBlockWarning(result.matches, this.settings.organizationName);
       }
-      this.onBlock?.(result, element, 'paste');
+      // Audit/stats recorded by background classify-payload handler.
       return;
     }
 
-    this.insertText(element, clipboardText);
+    elementPreviousValues.set(element, this.readElementValue(element));
   };
 
   private handleBeforeInput = (event: Event): void => {
