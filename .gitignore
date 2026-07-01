@@ -2,6 +2,8 @@ node_modules/
 dist/
 .DS_Store
 *.log
+playwright-report/
+test-results/
 
 # Chrome refuses to load unpacked extensions containing "_" prefixed paths.
 # Always load the built output: sourcecloak/dist

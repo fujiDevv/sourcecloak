@@ -127,6 +127,9 @@ export class InputGuard {
       return;
     }
 
+    // Insert optimistic text for async path
+    this.insertText(element, clipboardText);
+
     const result = await this.classifyPayload(clipboardText, 'paste', element.tagName.toLowerCase());
     if (result.blocked) {
       this.purgeElement(element);
