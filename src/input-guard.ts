@@ -163,6 +163,16 @@ export class InputGuard {
     return element.textContent ?? '';
   }
 
+  private setNativeValue(element: HTMLInputElement | HTMLTextAreaElement, value: string): void {
+    const proto = element instanceof HTMLInputElement ? window.HTMLInputElement.prototype : window.HTMLTextAreaElement.prototype;
+    const nativeSetter = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+    if (nativeSetter) {
+      nativeSetter.call(element, value);
+    } else {
+      element.value = value;
+    }
+  }
+
   private insertText(element: GuardedElement, text: string): void {
     if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || (element instanceof HTMLElement && element.isContentEditable)) {
       element.focus();
@@ -176,9 +186,15 @@ export class InputGuard {
       const start = element.selectionStart ?? element.value.length;
       const end = element.selectionEnd ?? element.value.length;
       const nextValue = `${element.value.slice(0, start)}${text}${element.value.slice(end)}`;
-      element.value = nextValue;
+      
+      this.setNativeValue(element, nextValue);
       const caret = start + text.length;
-      element.setSelectionRange(caret, caret);
+      try {
+        element.setSelectionRange(caret, caret);
+      } catch (e) {
+        // Some input types don't support setSelectionRange
+      }
+      
       elementPreviousValues.set(element, nextValue);
       element.dispatchEvent(new Event('input', { bubbles: true }));
       return;
@@ -191,7 +207,7 @@ export class InputGuard {
 
   private purgeElement(element: GuardedElement): void {
     if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-      element.value = '';
+      this.setNativeValue(element, '');
     } else {
       element.textContent = '';
     }
@@ -200,11 +216,25 @@ export class InputGuard {
   }
 
   private restoreOrPurge(element: GuardedElement, previousValue: string): void {
+    let start: number | null = null;
+    let end: number | null = null;
+
     if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-      element.value = previousValue;
+      start = element.selectionStart;
+      end = element.selectionEnd;
+      this.setNativeValue(element, previousValue);
+      
+      if (start !== null && end !== null) {
+        try {
+          element.setSelectionRange(start, end);
+        } catch (e) {
+          // Ignore if input type doesn't support it
+        }
+      }
     } else {
       element.textContent = previousValue;
     }
+    
     elementPreviousValues.set(element, previousValue);
     element.dispatchEvent(new Event('input', { bubbles: true }));
   }
