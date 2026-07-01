@@ -73,7 +73,14 @@ function ensureGuard(): void {
 
   if (!inputGuard) {
     inputGuard = new InputGuard({
-      settings: currentSettings
+      settings: currentSettings,
+      onBlock: (result, element, eventType) => {
+        safeSendMessage({
+          type: 'record-sync-block',
+          result,
+          entry: buildAuditEntry(result, element, eventType)
+        });
+      }
     });
     inputGuard.start();
     return;

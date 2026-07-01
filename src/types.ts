@@ -61,9 +61,10 @@ export interface SourceCloakStats {
   blocksByCategory: Record<string, number>;
 }
 
-export type ShieldMessage =
+export type SourceCloakMessage =
   | { type: 'classify-payload'; text: string; hostname: string; url: string; eventType: 'paste' | 'input'; elementTag: string }
   | { type: 'classification-result'; result: ClassificationResult }
+  | { type: 'record-sync-block'; result: ClassificationResult; entry: AuditEntry }
   | { type: 'log-audit-entry'; entry: AuditEntry }
   | { type: 'get-settings' }
   | { type: 'get-stats' }

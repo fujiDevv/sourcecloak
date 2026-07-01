@@ -117,7 +117,7 @@ sourcecloak/
 ### Install
 
 ```bash
-cd SourceCloak-shield
+cd sourcecloak
 npm install
 ```
 
@@ -191,6 +191,7 @@ No remote servers receive scanned payload content. Hugging Face is contacted onl
 
 ## Documentation
 
+- [SECURITY.md](./SECURITY.md) — Vulnerability reporting and support policy
 - [TESTING.md](./TESTING.md) — Manual and automated testing guide with sample payloads
 - [CONTRIBUTION.md](./CONTRIBUTION.md) — Development and contribution guidelines
 - [PRIVACY.md](./PRIVACY.md) — Privacy policy and data handling

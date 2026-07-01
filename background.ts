@@ -207,6 +207,12 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
     return false;
   }
 
+  if (message.type === 'record-sync-block') {
+    updateStatsFromResult(message.result).catch(() => {});
+    appendAuditEntry(message.entry).catch(() => {});
+    return false;
+  }
+
   if (message.type === 'classify-payload') {
     const { text, hostname, url, eventType, elementTag } = message;
 
@@ -220,7 +226,15 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
           return;
         }
 
-        if (settings.trustedDomains.includes(hostname)) {
+        const isDomainMatch = (host: string, patterns: string[]) => patterns.some(pattern => {
+          if (pattern.startsWith('*.')) {
+            const suffix = pattern.slice(2);
+            return host === suffix || host.endsWith('.' + suffix);
+          }
+          return host === pattern;
+        });
+
+        if (isDomainMatch(hostname, settings.trustedDomains)) {
           sendResponse({
             success: true,
             result: { blocked: false, score: 0, matches: [], processingMs: 0 }
@@ -228,7 +242,7 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
           return;
         }
 
-        if (settings.monitoredDomains.length > 0 && !settings.monitoredDomains.includes(hostname)) {
+        if (settings.monitoredDomains.length > 0 && !isDomainMatch(hostname, settings.monitoredDomains)) {
           sendResponse({
             success: true,
             result: { blocked: false, score: 0, matches: [], processingMs: 0 }
