@@ -150,14 +150,14 @@ See [TESTING.md](./TESTING.md) for the full test guide and sample payloads.
 
 ## Available Scripts
 
-| Script | Description |
-|--------|-------------|
-| `npm run dev` | Build in watch mode |
-| `npm run build` | Production build + manifest validation |
-| `npm run extension` | Alias for `npm run build` |
-| `npm run test` | Run Vitest unit tests |
-| `npm run type-check` | TypeScript validation |
-| `npm run verify` | Type-check + tests |
+| Script               | Description                            |
+| ----------------------| ----------------------------------------|
+| `npm run dev`        | Build in watch mode                    |
+| `npm run build`      | Production build + manifest validation |
+| `npm run extension`  | Alias for `npm run build`              |
+| `npm run test`       | Run Vitest unit tests                  |
+| `npm run type-check` | TypeScript validation                  |
+| `npm run verify`     | Type-check + tests                     |
 
 ---
 

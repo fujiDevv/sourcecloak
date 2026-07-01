@@ -10,6 +10,9 @@ const sensitivity = document.getElementById('sensitivity') as HTMLInputElement;
 const sensitivityValue = document.getElementById('sensitivity-value') as HTMLOutputElement;
 const auditBody = document.getElementById('audit-body') as HTMLTableSectionElement;
 const versionTag = document.getElementById('version-tag') as HTMLSpanElement;
+const exportBtn = document.getElementById('export-policy') as HTMLButtonElement;
+const importBtn = document.getElementById('import-policy') as HTMLButtonElement;
+const importFile = document.getElementById('import-file') as HTMLInputElement;
 
 function linesToArray(value: string): string[] {
   return value.split('\n').map((line) => line.trim()).filter(Boolean);
@@ -99,6 +102,47 @@ saveBtn.addEventListener('click', async () => {
   await extensionApi.storage.local.set({ [STORAGE_KEYS.SETTINGS]: settings });
   saveStatus.textContent = 'Policy saved locally.';
   setTimeout(() => { saveStatus.textContent = ''; }, 2500);
+});
+
+exportBtn.addEventListener('click', () => {
+  const settings = readForm();
+  const blob = new Blob([JSON.stringify(settings, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `sourcecloak-policy-${new Date().toISOString().split('T')[0]}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+});
+
+importBtn.addEventListener('click', () => {
+  importFile.click();
+});
+
+importFile.addEventListener('change', async (event) => {
+  const file = (event.target as HTMLInputElement).files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const content = e.target?.result as string;
+      const parsed = JSON.parse(content);
+      if (typeof parsed === 'object' && parsed !== null) {
+        applyForm({ ...DEFAULT_SETTINGS, ...parsed });
+        await extensionApi.storage.local.set({ [STORAGE_KEYS.SETTINGS]: readForm() });
+        saveStatus.textContent = 'Policy imported successfully!';
+      } else {
+        throw new Error('Invalid format');
+      }
+    } catch (err) {
+      saveStatus.textContent = 'Error parsing policy file.';
+    }
+    setTimeout(() => { saveStatus.textContent = ''; }, 2500);
+    // Reset file input so the same file can be imported again if needed
+    importFile.value = '';
+  };
+  reader.readAsText(file);
 });
 
 function escapeHtml(value: string): string {
