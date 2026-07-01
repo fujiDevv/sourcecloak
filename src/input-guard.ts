@@ -3,6 +3,7 @@ import { debounce } from './throttle';
 import { requestBackgroundClassification } from './ai';
 import { classifyWithRules } from './classifier';
 import { showBlockWarning } from './warning-overlay';
+import { isDomainMatch } from './utils';
 
 type GuardedElement = HTMLTextAreaElement | HTMLInputElement | HTMLElement;
 
@@ -102,6 +103,19 @@ export class InputGuard {
     pasteEvent.preventDefault();
     pasteEvent.stopImmediatePropagation();
 
+    const hostname = window.location.hostname;
+
+    if (isDomainMatch(hostname, this.settings.trustedDomains)) {
+      this.insertText(element, clipboardText);
+      return;
+    }
+
+    if (this.settings.monitoredDomains.length > 0 &&
+        !isDomainMatch(hostname, this.settings.monitoredDomains)) {
+      this.insertText(element, clipboardText);
+      return;
+    }
+
     // Synchronous Tier 1 (Rules) for instant credential blocks
     const syncResult = classifyWithRules(clipboardText, this.settings);
     if (syncResult.blocked) {
@@ -113,7 +127,7 @@ export class InputGuard {
       return;
     }
 
-    const result = await this.classifyPayload(clipboardText);
+    const result = await this.classifyPayload(clipboardText, 'paste', element.tagName.toLowerCase());
     if (result.blocked) {
       this.purgeElement(element);
       if (this.settings.showWarningOverlay) {
