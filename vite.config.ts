@@ -50,8 +50,6 @@ export default defineConfig({
       include: ['**/*.ts'],
       exclude: [
         '**/node_modules/**',
-        '**/extpay/**',
-        '**/extpay-content.ts',
         '**/main_world.ts',
       ],
       options: {

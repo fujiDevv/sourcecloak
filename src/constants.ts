@@ -6,13 +6,18 @@ export const STORAGE_KEYS = {
   MODEL_STATE: 'sourcecloak-model-state',
   MODEL_PROGRESS: 'sourcecloak-model-progress',
   STATS: 'sourcecloak-stats',
+  LICENSE: 'sourcecloak-license',
 } as const;
 
-/** Register this ID at https://extensionpay.com and create a one-time Pro plan. */
-export const EXTENSION_PAY_ID = 'sourcecloak';
+/**
+ * Lemon Squeezy checkout URL for SourceCloak Pro ($24 lifetime).
+ * Find this under Products → Share → Checkout link in your Lemon Squeezy dashboard.
+ * Format: https://{store}.lemonsqueezy.com/checkout/buy/{variant-id}
+ */
+export const LEMON_SQUEEZY_CHECKOUT_URL = 'https://sourcecloak.lemonsqueezy.com/checkout/buy/cad7f7d2-99ed-43ca-925a-6830bc8e5641';
 
-/** Optional plan nickname from ExtensionPay settings; leave empty to show all plans. */
-export const PRO_PLAN_NICKNAME = '';
+/** Revalidate stored license against Lemon Squeezy (ms). */
+export const LICENSE_VALIDATION_TTL_MS = 24 * 60 * 60 * 1000;
 
 export const PRO_PRICE = 24;
 export const PRO_PURCHASE_URL = 'https://sourcecloak.com/pricing';

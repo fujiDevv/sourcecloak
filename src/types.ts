@@ -71,9 +71,10 @@ export type SourceCloakMessage =
   | { type: 'get-stats' }
   | { type: 'get-audit-log' }
   | { type: 'get-edition' }
-  | { type: 'get-payment-user' }
-  | { type: 'open-payment-page' }
-  | { type: 'open-login-page' }
+  | { type: 'get-license-status' }
+  | { type: 'open-checkout-page' }
+  | { type: 'activate-license'; licenseKey: string }
+  | { type: 'deactivate-license' }
   | { type: 'check-model-status' }
   | { type: 'update-model-progress'; state: string; progress: number }
   | { type: 'run-offscreen-classification'; text: string; settings: SourceCloakSettings }

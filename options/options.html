@@ -219,11 +219,24 @@
 
         <div class="halo-actions">
           <button type="button" id="halo-buy" class="btn-primary halo-cta">Buy Pro — <span id="halo-price">$24</span> lifetime</button>
-          <button type="button" id="halo-login" class="btn-secondary">Already paid? Log in</button>
         </div>
+
+        <div id="halo-license-section" class="halo-license">
+          <label class="halo-license-label" for="halo-license-key">Already purchased? Enter your license key</label>
+          <div class="halo-license-row">
+            <input id="halo-license-key" type="text" class="halo-license-input" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false">
+            <button type="button" id="halo-activate" class="btn-secondary">Activate</button>
+          </div>
+        </div>
+
+        <div id="halo-pro-section" class="halo-pro hidden">
+          <p id="halo-pro-email" class="halo-pro-email"></p>
+          <button type="button" id="halo-deactivate" class="btn-secondary halo-deactivate">Deactivate on this device</button>
+        </div>
+
         <p id="halo-status" class="halo-status"></p>
         <p id="halo-refund-notice" class="halo-footnote halo-footnote-muted"></p>
-        <p class="halo-footnote">Secure checkout via <a href="https://extensionpay.com" target="_blank" rel="noopener noreferrer">ExtensionPay</a> · Stripe · <a href="https://sourcecloak.com/terms" target="_blank" rel="noopener noreferrer">Terms</a></p>
+        <p class="halo-footnote">Secure checkout via <a href="https://www.lemonsqueezy.com" target="_blank" rel="noopener noreferrer">Lemon Squeezy</a> · <a href="https://sourcecloak.com/terms" target="_blank" rel="noopener noreferrer">Terms</a></p>
       </div>
     </div>
   </div>

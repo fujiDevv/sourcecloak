@@ -307,6 +307,10 @@ body.edition-pro .card-community-only {
   backdrop-filter: blur(8px);
 }
 
+.hidden {
+  display: none !important;
+}
+
 .halo-overlay.hidden {
   display: none;
 }
@@ -501,4 +505,61 @@ body.edition-pro .card-community-only {
 
 .halo-footnote a:hover {
   color: var(--text);
+}
+
+.halo-license {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+}
+
+.halo-license-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.halo-license-row {
+  display: flex;
+  gap: 8px;
+}
+
+.halo-license-input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+}
+
+.halo-license-input:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.35);
+}
+
+.halo-pro {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+}
+
+.halo-pro.hidden {
+  display: none;
+}
+
+.halo-pro-email {
+  margin: 0 0 10px;
+  font-size: 11px;
+  color: #86efac;
+}
+
+.halo-deactivate {
+  width: 100%;
+  justify-content: center;
+  font-size: 11px;
 }

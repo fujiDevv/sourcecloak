@@ -2,23 +2,15 @@ import { DEFAULT_SETTINGS, STORAGE_KEYS } from './src/constants';
 import { classifyWithRules } from './src/classifier';
 import { editionFromPaid, getAuditLimit, sanitizeSettings } from './src/edition';
 import {
-  createExtPay,
+  activateProLicense,
+  deactivateProLicense,
+  getLicenseStatus,
   isProUser,
-  openProLoginPage,
-  openProPaymentPage,
-  startExtPayBackground,
-} from './src/extpay-client';
+  openProCheckoutPage,
+} from './src/license-client';
 import { extensionApi, supportsOffscreenDocuments } from './src/platform';
 import { isDomainMatch } from './src/utils';
 import type { AuditEntry, ClassificationResult, Edition, SourceCloakSettings, SourceCloakStats } from './src/types';
-
-startExtPayBackground();
-
-const extpay = createExtPay();
-extpay.onPaid.addListener(async () => {
-  const settings = await getSettings();
-  await extensionApi.storage.local.set({ [STORAGE_KEYS.SETTINGS]: settings });
-});
 
 const supportsOffscreen = supportsOffscreenDocuments();
 let creatingOffscreen: Promise<void> | null = null;
@@ -178,6 +170,7 @@ extensionApi.runtime.onInstalled?.addListener(async (details) => {
 });
 
 extensionApi.runtime.onStartup?.addListener(async () => {
+  await isProUser(true).catch(() => {});
   const settings = await getSettings();
   if (settings.enabled && supportsOffscreen) {
     setupOffscreen().catch(() => {});
@@ -207,32 +200,44 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
     return true;
   }
 
-  if (message.type === 'get-payment-user') {
-    createExtPay().getUser()
-      .then(async (user) => {
-        const edition = editionFromPaid(user.paid);
+  if (message.type === 'get-license-status') {
+    getLicenseStatus()
+      .then((status) => sendResponse({ success: true, ...status }))
+      .catch((err: Error) => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
+  if (message.type === 'open-checkout-page') {
+    openProCheckoutPage()
+      .then(() => sendResponse({ success: true }))
+      .catch((err: Error) => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
+  if (message.type === 'activate-license') {
+    const licenseKey = message.licenseKey as string;
+    activateProLicense(licenseKey)
+      .then(async (status) => {
+        if (!status.isPro) {
+          sendResponse({
+            success: false,
+            error: status.error ?? 'License activation failed. Check your key and try again.',
+          });
+          return;
+        }
         sendResponse({
           success: true,
-          edition,
-          email: user.email,
-          paidAt: user.paidAt?.toISOString() ?? null,
-          plan: user.plan,
+          edition: 'pro' as Edition,
+          customerEmail: status.customerEmail,
         });
       })
       .catch((err: Error) => sendResponse({ success: false, error: err.message }));
     return true;
   }
 
-  if (message.type === 'open-payment-page') {
-    openProPaymentPage()
-      .then(() => sendResponse({ success: true }))
-      .catch((err: Error) => sendResponse({ success: false, error: err.message }));
-    return true;
-  }
-
-  if (message.type === 'open-login-page') {
-    openProLoginPage()
-      .then(() => sendResponse({ success: true }))
+  if (message.type === 'deactivate-license') {
+    deactivateProLicense()
+      .then(() => sendResponse({ success: true, edition: 'community' as Edition }))
       .catch((err: Error) => sendResponse({ success: false, error: err.message }));
     return true;
   }

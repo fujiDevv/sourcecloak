@@ -24,10 +24,15 @@ const importFile = document.getElementById('import-file') as HTMLInputElement;
 const haloOverlay = document.getElementById('halo-overlay') as HTMLDivElement;
 const haloClose = document.getElementById('halo-close') as HTMLButtonElement;
 const haloBuy = document.getElementById('halo-buy') as HTMLButtonElement;
-const haloLogin = document.getElementById('halo-login') as HTMLButtonElement;
 const haloStatus = document.getElementById('halo-status') as HTMLParagraphElement;
 const haloPrice = document.getElementById('halo-price') as HTMLSpanElement;
 const haloRefundNotice = document.getElementById('halo-refund-notice') as HTMLParagraphElement;
+const haloLicenseSection = document.getElementById('halo-license-section') as HTMLDivElement;
+const haloLicenseKey = document.getElementById('halo-license-key') as HTMLInputElement;
+const haloActivate = document.getElementById('halo-activate') as HTMLButtonElement;
+const haloProSection = document.getElementById('halo-pro-section') as HTMLDivElement;
+const haloProEmail = document.getElementById('halo-pro-email') as HTMLParagraphElement;
+const haloDeactivate = document.getElementById('halo-deactivate') as HTMLButtonElement;
 
 let currentEdition: Edition = 'community';
 
@@ -73,7 +78,12 @@ function applyForm(settings: SourceCloakSettings): void {
   (document.getElementById('trusted-domains') as HTMLTextAreaElement).value = arrayToLines(settings.trustedDomains);
 }
 
-function applyEditionUi(edition: Edition): void {
+function setHaloStatus(message: string, isError = false): void {
+  haloStatus.textContent = message;
+  haloStatus.classList.toggle('error', isError);
+}
+
+function applyEditionUi(edition: Edition, customerEmail?: string): void {
   currentEdition = edition;
   const isPro = edition === 'pro';
 
@@ -82,19 +92,23 @@ function applyEditionUi(edition: Edition): void {
 
   sensitivity.max = isPro ? '100' : String(COMMUNITY_MAX_SENSITIVITY);
 
-  haloLogin.textContent = isPro ? 'Manage subscription' : 'Already paid? Log in';
   haloBuy.style.display = isPro ? 'none' : 'inline-flex';
+  haloLicenseSection.classList.toggle('hidden', isPro);
+  haloProSection.classList.toggle('hidden', !isPro);
 
   if (isPro) {
-    closeHalo();
+    haloProEmail.textContent = customerEmail
+      ? `Pro active for ${customerEmail}`
+      : 'Pro license active on this device.';
+  } else {
+    haloProEmail.textContent = '';
   }
 }
 
 function openHalo(): void {
   haloOverlay.classList.remove('hidden');
   haloOverlay.setAttribute('aria-hidden', 'false');
-  haloStatus.textContent = '';
-  haloStatus.classList.remove('error');
+  setHaloStatus('');
 }
 
 function closeHalo(): void {
@@ -117,19 +131,26 @@ function switchToTab(tabName: string): void {
 }
 
 async function loadSettings(): Promise<void> {
-  const response = await extensionApi.runtime.sendMessage<{
-    success: boolean;
-    settings: SourceCloakSettings;
-    edition?: Edition;
-  }>({ type: 'get-settings' });
+  const [settingsRes, licenseRes] = await Promise.all([
+    extensionApi.runtime.sendMessage<{
+      success: boolean;
+      settings: SourceCloakSettings;
+      edition?: Edition;
+    }>({ type: 'get-settings' }),
+    extensionApi.runtime.sendMessage<{
+      success: boolean;
+      isPro?: boolean;
+      customerEmail?: string;
+    }>({ type: 'get-license-status' }),
+  ]);
 
-  const edition = response?.edition ?? 'community';
+  const edition = settingsRes?.edition ?? (licenseRes?.isPro ? 'pro' : 'community');
   const settings = sanitizeSettings(
-    { ...DEFAULT_SETTINGS, ...(response?.settings ?? {}) },
+    { ...DEFAULT_SETTINGS, ...(settingsRes?.settings ?? {}) },
     edition
   );
 
-  applyEditionUi(edition);
+  applyEditionUi(edition, licenseRes?.customerEmail);
   applyForm(settings);
 }
 
@@ -170,7 +191,6 @@ tabs.forEach((button) => {
 document.querySelectorAll<HTMLElement>('[data-open-halo]').forEach((el) => {
   el.addEventListener('click', (event) => {
     event.preventDefault();
-    if (currentEdition === 'pro') return;
     openHalo();
   });
 });
@@ -244,21 +264,77 @@ importFile.addEventListener('change', async (event) => {
   reader.readAsText(file);
 });
 
-async function openPaymentFlow(type: 'open-payment-page' | 'open-login-page'): Promise<void> {
-  const response = await extensionApi.runtime.sendMessage<{ success: boolean; error?: string }>({ type });
+haloBuy.addEventListener('click', async () => {
+  const response = await extensionApi.runtime.sendMessage<{ success: boolean; error?: string }>({
+    type: 'open-checkout-page',
+  });
+
   if (!response?.success) {
-    haloStatus.textContent = response?.error ?? 'Could not open payment page.';
-    haloStatus.classList.add('error');
+    setHaloStatus(response?.error ?? 'Could not open checkout page.', true);
     return;
   }
-  haloStatus.textContent = type === 'open-payment-page'
-    ? 'Payment page opened. Pro unlocks automatically after checkout.'
-    : 'Login page opened. Check your email for the magic link.';
-  haloStatus.classList.remove('error');
-}
 
-haloBuy.addEventListener('click', () => openPaymentFlow('open-payment-page'));
-haloLogin.addEventListener('click', () => openPaymentFlow('open-login-page'));
+  setHaloStatus('Checkout opened. Paste your license key here after purchase.');
+});
+
+haloActivate.addEventListener('click', async () => {
+  const licenseKey = haloLicenseKey.value.trim();
+  if (!licenseKey) {
+    setHaloStatus('Enter the license key from your purchase email.', true);
+    return;
+  }
+
+  haloActivate.disabled = true;
+  setHaloStatus('Activating license…');
+
+  const response = await extensionApi.runtime.sendMessage<{
+    success: boolean;
+    edition?: Edition;
+    customerEmail?: string;
+    error?: string;
+  }>({
+    type: 'activate-license',
+    licenseKey,
+  });
+
+  haloActivate.disabled = false;
+
+  if (!response?.success) {
+    setHaloStatus(response?.error ?? 'Activation failed.', true);
+    return;
+  }
+
+  haloLicenseKey.value = '';
+  applyEditionUi(response.edition ?? 'pro', response.customerEmail);
+  await loadSettings();
+  setHaloStatus('Pro unlocked. All features are now active.');
+});
+
+haloDeactivate.addEventListener('click', async () => {
+  if (!confirm('Deactivate Pro on this device? You can re-activate with the same license key later.')) {
+    return;
+  }
+
+  const response = await extensionApi.runtime.sendMessage<{ success: boolean; edition?: Edition; error?: string }>({
+    type: 'deactivate-license',
+  });
+
+  if (!response?.success) {
+    setHaloStatus(response?.error ?? 'Could not deactivate license.', true);
+    return;
+  }
+
+  applyEditionUi('community');
+  await loadSettings();
+  setHaloStatus('License deactivated on this device.');
+});
+
+haloLicenseKey.addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') {
+    event.preventDefault();
+    haloActivate.click();
+  }
+});
 
 function escapeHtml(value: string): string {
   return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');

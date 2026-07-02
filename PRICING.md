@@ -1,6 +1,6 @@
 # SourceCloak Pricing
 
-SourceCloak **Community** is free. **Pro** is a **$24 lifetime** upgrade handled by [ExtensionPay](https://extensionpay.com) (Stripe).
+SourceCloak **Community** is free. **Pro** is a **$24 lifetime** upgrade handled by [Lemon Squeezy](https://www.lemonsqueezy.com).
 
 ## Community (Free)
 
@@ -23,9 +23,10 @@ SourceCloak **Community** is free. **Pro** is a **$24 lifetime** upgrade handled
 
 1. Install SourceCloak from the Chrome Web Store (or load unpacked from `dist/`)
 2. Open **Policy Console → Upgrade**
-3. Click **Buy Pro — $24 lifetime**
-4. Complete checkout in the ExtensionPay / Stripe window
-5. Pro unlocks automatically; use **Already paid? Log in** to restore on another browser
+3. Click **Buy Pro — $24 lifetime** (opens Lemon Squeezy checkout)
+4. Complete checkout — your **license key** is emailed immediately
+5. Paste the license key in Policy Console and click **Activate**
+6. Use **Deactivate on this device** to move the license to another browser
 
 **No refunds:** All Pro sales are final. Evaluate the free Community edition before purchasing.
 
@@ -33,7 +34,9 @@ Details: [sourcecloak.com/pricing](https://sourcecloak.com/pricing) · [Terms](h
 
 ## Setup (maintainers)
 
-1. [Sign up at ExtensionPay](https://extensionpay.com) and register extension ID `sourcecloak` (or update `EXTENSION_PAY_ID` in `src/constants.ts`)
-2. Create a **one-time $24** plan in ExtensionPay settings
-3. Optionally set `PRO_PLAN_NICKNAME` in `src/constants.ts` to skip the plan picker
-4. Connect your Stripe account in ExtensionPay
+1. Create a **one-time $24** product in [Lemon Squeezy](https://app.lemonsqueezy.com) with **license keys enabled**
+2. Copy the checkout link: **Products → Share → Checkout link**
+3. Set `LEMON_SQUEEZY_CHECKOUT_URL` in `src/constants.ts` to that URL
+4. Rebuild: `npm run build`
+
+License activation uses Lemon Squeezy's public license API (`api.lemonsqueezy.com`) — no backend or API key in the extension is required.
