@@ -64,14 +64,27 @@
 
           <article class="card card-pro-only" id="card-advanced-stack">
             <h3>Advanced classifiers</h3>
+            <div id="gemini-status-block" class="gemini-status-block hidden">
+              <div class="gemini-status-row">
+                <span>Gemini Nano on this device</span>
+                <span id="gemini-availability" class="status-pill gemini-checking">Checking…</span>
+              </div>
+              <p id="gemini-availability-desc" class="hint gemini-desc">Detecting on-device model availability…</p>
+              <p id="gemini-flag-hint" class="hint gemini-flag-hint hidden">
+                Enable
+                <a id="gemini-flag-link" href="chrome://flags/#prompt-api-for-gemini-nano" class="flag-link">Prompt API for Gemini Nano</a>
+                in <code>chrome://flags</code>, then restart Chrome. Requires Chrome 127+ with on-device AI support.
+              </p>
+            </div>
             <label class="field checkbox-field">
               <input id="use-onnx" type="checkbox">
               <span>ONNX WASM classifier (offscreen)</span>
             </label>
             <label class="field checkbox-field">
               <input id="use-gemini" type="checkbox">
-              <span>Gemini Nano semantic review</span>
+              <span>Gemini Nano semantic review (Tier 4)</span>
             </label>
+            <p class="hint">Tier 4 runs only when Gemini Nano is available. Falls back to Tier 1–3 when unavailable.</p>
           </article>
 
           <article class="card card-community-only halo-teaser" data-open-halo>

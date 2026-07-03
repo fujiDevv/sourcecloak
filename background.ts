@@ -262,6 +262,29 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
     return true;
   }
 
+  if (message.type === 'get-gemini-availability') {
+    (async () => {
+      try {
+        const [tab] = await extensionApi.tabs.query({ active: true, currentWindow: true });
+        if (!tab?.id || tab.url?.startsWith('chrome://') || tab.url?.startsWith('chrome-extension://')) {
+          sendResponse({ success: true, availability: 'unavailable', tabRestricted: true });
+          return;
+        }
+        const res = await extensionApi.tabs.sendMessage<{ success?: boolean; availability?: string }>(tab.id, {
+          type: 'sourcecloak-get-gemini-availability',
+        });
+        sendResponse({
+          success: true,
+          availability: res?.availability ?? 'unavailable',
+          tabUrl: tab.url,
+        });
+      } catch {
+        sendResponse({ success: true, availability: 'unavailable', tabRestricted: false });
+      }
+    })();
+    return true;
+  }
+
   if (message.type === 'check-model-status') {
     if (!supportsOffscreen) {
       sendResponse({ success: true, state: 'unsupported', progress: 0 });

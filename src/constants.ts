@@ -45,3 +45,5 @@ export const DEFAULT_SETTINGS = {
 export const MAX_AUDIT_ENTRIES = 500;
 export const CLASSIFICATION_TIMEOUT_MS = 8000;
 export const INPUT_THROTTLE_MS = 400;
+
+export const CHROME_GEMINI_FLAG_URL = 'chrome://flags/#prompt-api-for-gemini-nano';

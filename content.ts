@@ -1,6 +1,6 @@
 import { InputGuard } from './src/input-guard';
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from './src/constants';
-import { setMainWorldPort } from './src/ai';
+import { checkGeminiNanoAvailability, setMainWorldPort } from './src/ai';
 import type { AuditEntry, ClassificationResult, SourceCloakSettings } from './src/types';
 import { extensionApi, getRuntimeUrl } from './src/platform';
 
@@ -9,9 +9,9 @@ let inputGuard: InputGuard | null = null;
 let isOrphaned = false;
 let mainWorldInjected = false;
 
-/** Inject only when Tier 4 (Gemini Nano) is enabled — avoids running page scripts on every site. */
-function ensureMainWorldBridge(): void {
-  if (mainWorldInjected || !currentSettings.useGeminiNano) return;
+/** Inject main world bridge. Pass force=true to probe availability even when Gemini is disabled in settings. */
+function ensureMainWorldBridge(force = false): void {
+  if (mainWorldInjected || (!force && !currentSettings.useGeminiNano)) return;
 
   try {
     if (!extensionApi.runtime.id) return;
@@ -128,8 +128,21 @@ function handleStorageChanged(changes: Record<string, chrome.storage.StorageChan
   ensureGuard();
 }
 
-function handleRuntimeMessage(message: { type?: string }): boolean {
+function handleRuntimeMessage(
+  message: { type?: string },
+  _sender: chrome.runtime.MessageSender,
+  sendResponse: (response?: unknown) => void
+): boolean {
   if (!checkContextOrCleanup()) return false;
+
+  if (message.type === 'sourcecloak-get-gemini-availability') {
+    ensureMainWorldBridge(true);
+    checkGeminiNanoAvailability()
+      .then((availability) => sendResponse({ success: true, availability }))
+      .catch(() => sendResponse({ success: true, availability: 'unavailable' }));
+    return true;
+  }
+
   if (message.type === 'settings-updated') {
     loadSettings().then(() => {
       ensureMainWorldBridge();

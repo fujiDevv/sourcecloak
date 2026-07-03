@@ -175,6 +175,59 @@ textarea {
   color: var(--muted);
 }
 
+.gemini-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 13px;
+}
+
+.status-pill {
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.status-pill.gemini-available,
+.status-pill.gemini-downloadable {
+  color: #86efac;
+  border-color: rgba(134, 239, 172, 0.35);
+}
+
+.status-pill.gemini-downloading,
+.status-pill.gemini-checking,
+.status-pill.gemini-unknown {
+  color: #fde68a;
+  border-color: rgba(253, 230, 138, 0.35);
+}
+
+.status-pill.gemini-unavailable {
+  color: #fca5a5;
+  border-color: rgba(252, 165, 165, 0.35);
+}
+
+.gemini-desc { margin-bottom: 8px; }
+.gemini-flag-hint code {
+  font-size: 11px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  font-family: "IBM Plex Mono", monospace;
+}
+
+a.flag-link {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
 .audit-table {
   width: 100%;
   border-collapse: collapse;
@@ -246,6 +299,10 @@ textarea {
 }
 
 /* Edition visibility */
+body.edition-community .gemini-status-block {
+  display: none !important;
+}
+
 body.edition-community .nav-pro-only,
 body.edition-community .card-pro-only {
   display: none;

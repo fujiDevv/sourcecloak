@@ -6,8 +6,9 @@ import {
   STORAGE_KEYS,
 } from '../src/constants';
 import { sanitizeSettings } from '../src/edition';
+import { formatGeminiStatus, geminiFlagUrl, wireFlagLinks } from '../src/gemini-status';
 import { extensionApi } from '../src/platform';
-import type { AuditEntry, Edition, SourceCloakSettings } from '../src/types';
+import type { AuditEntry, Edition, GeminiAvailability, SourceCloakSettings } from '../src/types';
 
 const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.nav-btn[data-tab]'));
 const tabSections = Array.from(document.querySelectorAll<HTMLElement>('.tab'));
@@ -35,6 +36,45 @@ const haloProEmail = document.getElementById('halo-pro-email') as HTMLParagraphE
 const haloDeactivate = document.getElementById('halo-deactivate') as HTMLButtonElement;
 
 let currentEdition: Edition = 'community';
+
+const geminiStatusBlock = document.getElementById('gemini-status-block') as HTMLDivElement;
+const geminiAvailability = document.getElementById('gemini-availability') as HTMLSpanElement;
+const geminiAvailabilityDesc = document.getElementById('gemini-availability-desc') as HTMLParagraphElement;
+const geminiFlagHint = document.getElementById('gemini-flag-hint') as HTMLParagraphElement;
+const geminiFlagLink = document.getElementById('gemini-flag-link') as HTMLAnchorElement;
+
+function setGeminiStatusVisible(visible: boolean): void {
+  geminiStatusBlock.classList.toggle('hidden', !visible);
+}
+
+function applyGeminiAvailabilityUi(availability: GeminiAvailability, tabRestricted = false): void {
+  const info = formatGeminiStatus(availability);
+  geminiAvailability.textContent = info.label;
+  geminiAvailability.className = `status-pill gemini-${info.availability}`;
+
+  if (tabRestricted) {
+    geminiAvailabilityDesc.textContent = 'Open a regular webpage tab, then refresh this page to detect Gemini Nano.';
+    geminiFlagHint.classList.remove('hidden');
+    return;
+  }
+
+  geminiAvailabilityDesc.textContent = info.description;
+  geminiFlagHint.classList.toggle('hidden', !info.showFlagLink);
+}
+
+async function loadGeminiAvailability(): Promise<void> {
+  if (geminiStatusBlock.classList.contains('hidden')) return;
+
+  applyGeminiAvailabilityUi('unknown');
+  const res = await extensionApi.runtime.sendMessage<{
+    success?: boolean;
+    availability?: GeminiAvailability;
+    tabRestricted?: boolean;
+  }>({ type: 'get-gemini-availability' });
+
+  applyGeminiAvailabilityUi(res?.availability ?? 'unavailable', !!res?.tabRestricted);
+  wireFlagLinks();
+}
 
 function linesToArray(value: string): string[] {
   return value.split('\n').map((line) => line.trim()).filter(Boolean);
@@ -103,6 +143,9 @@ function applyEditionUi(edition: Edition, customerEmail?: string): void {
   } else {
     haloProEmail.textContent = '';
   }
+
+  setGeminiStatusVisible(isPro);
+  if (isPro) loadGeminiAvailability().catch(console.error);
 }
 
 function openHalo(): void {
@@ -348,6 +391,9 @@ const params = new URLSearchParams(window.location.search);
 if (params.get('welcome') === '1' || params.get('halo') === '1' || window.location.hash === '#upgrade') {
   openHalo();
 }
+
+geminiFlagLink.href = geminiFlagUrl();
+wireFlagLinks();
 
 loadSettings();
 loadAudit();

@@ -63,6 +63,8 @@ export interface SourceCloakStats {
 
 export type Edition = 'community' | 'pro';
 
+export type GeminiAvailability = 'available' | 'downloadable' | 'downloading' | 'unavailable' | 'unknown';
+
 export type SourceCloakMessage =
   | { type: 'classify-payload'; text: string; hostname: string; url: string; eventType: 'paste' | 'input'; elementTag: string }
   | { type: 'classification-result'; result: ClassificationResult }
@@ -75,6 +77,8 @@ export type SourceCloakMessage =
   | { type: 'open-checkout-page' }
   | { type: 'activate-license'; licenseKey: string }
   | { type: 'deactivate-license' }
+  | { type: 'get-gemini-availability' }
+  | { type: 'sourcecloak-get-gemini-availability' }
   | { type: 'check-model-status' }
   | { type: 'update-model-progress'; state: string; progress: number }
   | { type: 'run-offscreen-classification'; text: string; settings: SourceCloakSettings }

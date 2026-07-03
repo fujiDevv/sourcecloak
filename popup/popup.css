@@ -134,6 +134,18 @@ body {
 .badge.ready { color: #000000; background: #ffffff; }
 .badge.loading { color: #000000; background: #a3a3a3; }
 
+.gemini-row { margin-top: 4px; }
+.badge.gemini-available,
+.badge.gemini-downloadable { color: #86efac; border: 1px solid rgba(134, 239, 172, 0.35); background: transparent; }
+.badge.gemini-downloading,
+.badge.gemini-checking,
+.badge.gemini-unknown { color: #fde68a; border: 1px solid rgba(253, 230, 138, 0.35); background: transparent; }
+.badge.gemini-unavailable { color: #fca5a5; border: 1px solid rgba(252, 165, 165, 0.35); background: transparent; }
+
+.gemini-hint { margin: 8px 0 0; font-size: 11px; color: var(--muted); line-height: 1.4; }
+.gemini-hint a.flag-link { color: var(--accent); text-decoration: underline; }
+.gemini-hint code { font-size: 10px; padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border); }
+
 .recent-list {
   list-style: none;
   margin: 0;
@@ -205,6 +217,8 @@ body {
 .explore-pro:hover {
   color: var(--text);
 }
+
+.hidden { display: none !important; }
 
 .explore-pro.hidden {
   display: none;
