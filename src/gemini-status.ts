@@ -1,7 +1,16 @@
-import { CHROME_GEMINI_FLAG_URL } from './constants';
-import { extensionApi } from './platform';
 import type { GeminiAvailability } from './types';
+import {
+  geminiFlagUrl,
+  openGeminiFlagPage,
+  resolveLocalAIStatus,
+  wireFlagLinks,
+  type AICapabilityRecord,
+  type LocalAIStatusInfo,
+} from './ai-capability';
 
+export type { LocalAIStatusInfo };
+
+/** @deprecated Prefer resolveLocalAIStatus with AICapabilityRecord */
 export interface GeminiStatusInfo {
   availability: GeminiAvailability;
   label: string;
@@ -10,7 +19,7 @@ export interface GeminiStatusInfo {
   showFlagLink: boolean;
 }
 
-const STATUS_MAP: Record<GeminiAvailability, Omit<GeminiStatusInfo, 'availability'>> = {
+const LEGACY_STATUS_MAP: Record<GeminiAvailability, Omit<GeminiStatusInfo, 'availability'>> = {
   available: {
     label: 'Ready',
     description: 'Gemini Nano is available for Tier 4 semantic review on this device.',
@@ -43,26 +52,13 @@ const STATUS_MAP: Record<GeminiAvailability, Omit<GeminiStatusInfo, 'availabilit
   },
 };
 
+export function formatLocalAIStatus(capability: AICapabilityRecord): LocalAIStatusInfo {
+  return resolveLocalAIStatus(capability);
+}
+
 export function formatGeminiStatus(availability: GeminiAvailability): GeminiStatusInfo {
-  const info = STATUS_MAP[availability] ?? STATUS_MAP.unknown;
+  const info = LEGACY_STATUS_MAP[availability] ?? LEGACY_STATUS_MAP.unknown;
   return { availability, ...info };
 }
 
-export function geminiFlagUrl(): string {
-  return CHROME_GEMINI_FLAG_URL;
-}
-
-export function openGeminiFlagPage(): void {
-  extensionApi.tabs.create({ url: CHROME_GEMINI_FLAG_URL }).catch(() => {
-    window.open(CHROME_GEMINI_FLAG_URL, '_blank');
-  });
-}
-
-export function wireFlagLinks(root: ParentNode = document): void {
-  root.querySelectorAll<HTMLAnchorElement>('a.flag-link, a[data-gemini-flag]').forEach((link) => {
-    link.addEventListener('click', (event) => {
-      event.preventDefault();
-      openGeminiFlagPage();
-    });
-  });
-}
+export { geminiFlagUrl, openGeminiFlagPage, wireFlagLinks };

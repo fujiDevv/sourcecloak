@@ -246,6 +246,8 @@ Tests cover:
 | 1 | Regex | SSH key, AWS key, GitHub token |
 | 2 | Token scorer | CONFIDENTIAL + `@corp/` code block |
 | 3 | ONNX WASM | Long proprietary code payloads (after model loads) |
-| 4 | Gemini Nano | Semantic review when Chrome Prompt API is available |
+| 4 | Gemini Nano | Optional semantic enhancement when Chrome Prompt API is available (Pro toggle) |
+
+Tier 1–3 (rules + ONNX) must pass on any modern Chrome without Gemini Nano. Check **popup → Local AI status** or **Policy Console → Re-check capability** for green (enhanced), blue (optimized ONNX), or yellow (temporary fallback) states.
 
 > **Note on ONNX Latency:** The Tier 3 ONNX WASM classifier requires a one-time ~25MB download of model weights from Hugging Face on its first run. You may experience a 1–3 second delay on the very first long-payload classification. Subsequent classifications are cached and nearly instant.

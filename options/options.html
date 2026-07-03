@@ -37,6 +37,27 @@
           <p>Configure on-device interception before any cloud tool can receive pasted payloads.</p>
         </header>
 
+        <article id="welcome-banner" class="welcome-banner hidden">
+          <h3>Two-tier local AI</h3>
+          <p>SourceCloak always protects you with on-device rules and ONNX WASM classifiers. Gemini Nano is an optional enhancement for Tier 4 semantic review on supported Chrome builds — never required for core or Pro features.</p>
+          <button type="button" id="welcome-dismiss" class="btn-secondary">Got it</button>
+        </article>
+
+        <article id="ai-capability-banner" class="ai-capability-banner">
+          <div class="ai-capability-row">
+            <div>
+              <p class="ai-capability-eyebrow">Local AI status</p>
+              <h3 id="ai-capability-label">Optimized local AI active</h3>
+            </div>
+            <span id="ai-capability-tier" class="status-pill ai-tier-optimized">ONNX</span>
+          </div>
+          <p id="ai-capability-desc" class="hint">ONNX WASM classifiers power Tier 3 review on every modern Chrome install.</p>
+          <div class="ai-capability-actions">
+            <button type="button" id="refresh-ai-capability" class="btn-secondary">Re-check capability</button>
+            <a id="compatibility-link" href="https://sourcecloak.com/compatibility" target="_blank" rel="noopener noreferrer" class="btn-link">Device compatibility test</a>
+          </div>
+        </article>
+
         <div class="card-grid">
           <article class="card">
             <h3>Master Switch</h3>
@@ -62,34 +83,22 @@
             </label>
           </article>
 
-          <article class="card card-pro-only" id="card-advanced-stack">
-            <h3>Advanced classifiers</h3>
-            <div id="gemini-status-block" class="gemini-status-block hidden">
-              <div class="gemini-status-row">
-                <span>Gemini Nano on this device</span>
-                <span id="gemini-availability" class="status-pill gemini-checking">Checking…</span>
-              </div>
-              <p id="gemini-availability-desc" class="hint gemini-desc">Detecting on-device model availability…</p>
-              <p id="gemini-flag-hint" class="hint gemini-flag-hint hidden">
-                Enable
-                <a id="gemini-flag-link" href="chrome://flags/#prompt-api-for-gemini-nano" class="flag-link">Prompt API for Gemini Nano</a>
-                in <code>chrome://flags</code>, then restart Chrome. Requires Chrome 127+ with on-device AI support.
-              </p>
-            </div>
-            <label class="field checkbox-field">
-              <input id="use-onnx" type="checkbox">
-              <span>ONNX WASM classifier (offscreen)</span>
+          <article class="card" id="card-advanced-stack">
+            <h3>Classifier stack</h3>
+            <label class="field checkbox-field community-locked">
+              <input id="use-onnx" type="checkbox" checked disabled>
+              <span>ONNX WASM classifier (Tier 3, always on)</span>
             </label>
-            <label class="field checkbox-field">
+            <label class="field checkbox-field card-pro-only">
               <input id="use-gemini" type="checkbox">
-              <span>Gemini Nano semantic review (Tier 4)</span>
+              <span>Gemini Nano semantic review (Tier 4, optional enhancement)</span>
             </label>
-            <p class="hint">Tier 4 runs only when Gemini Nano is available. Falls back to Tier 1–3 when unavailable.</p>
+            <p class="hint">Tier 1–3 run on every device. Tier 4 activates only when Gemini Nano is available and silently falls back to ONNX otherwise.</p>
           </article>
 
           <article class="card card-community-only halo-teaser" data-open-halo>
-            <h3>4-Tier Pipeline</h3>
-            <p class="hint">You're protected with Tier 1–2 on AI chat sites. Pro adds ONNX semantic depth, custom signatures, and deployment tooling.</p>
+            <h3>Pro policy controls</h3>
+            <p class="hint">Community includes Tier 1–3 ONNX protection on AI chat sites. Pro adds custom signatures, domain policy, exports, and full audit history — with or without Gemini Nano.</p>
             <button type="button" class="btn-halo-teaser">See what Pro unlocks</button>
           </article>
 
@@ -204,30 +213,28 @@
         <img src="../assets/logo128.png" alt="" class="halo-logo" width="56" height="56">
         <p class="halo-eyebrow">SourceCloak Pro</p>
         <h2 id="halo-title" class="halo-title">The full defense stack, on-device</h2>
-        <p class="halo-lead">Community already blocks credentials and leaks on AI chat tools. Pro adds semantic classification and policy control — still zero telemetry.</p>
+        <p class="halo-lead">Community already blocks credentials and leaks with Tier 1–3 ONNX protection. Pro adds policy control, deployment tooling, and full audit depth — regardless of Gemini Nano availability.</p>
 
         <div class="halo-tiers">
           <div class="halo-tier halo-tier-active">
-            <span class="halo-tier-num">1–2</span>
-            <span class="halo-tier-label">Regex + Token</span>
+            <span class="halo-tier-num">1–3</span>
+            <span class="halo-tier-label">Rules + ONNX</span>
             <span class="halo-tier-note">Included</span>
           </div>
-          <div class="halo-tier halo-tier-pro">
-            <span class="halo-tier-num">3</span>
-            <span class="halo-tier-label">ONNX WASM</span>
-          </div>
-          <div class="halo-tier halo-tier-pro">
+          <div class="halo-tier halo-tier-pro halo-tier-bonus">
             <span class="halo-tier-num">4</span>
             <span class="halo-tier-label">Gemini Nano</span>
+            <span class="halo-tier-note">Bonus</span>
           </div>
         </div>
 
         <ul class="halo-features">
-          <li>ONNX + Gemini Nano classifiers</li>
           <li>Custom regex &amp; corporate signatures</li>
           <li>Monitored and trusted domain lists</li>
           <li>Policy export / import for teams</li>
           <li>Full audit history (500 events)</li>
+          <li>Full sensitivity range &amp; deployment profiles</li>
+          <li>Optional Tier 4 Gemini Nano when your device supports it</li>
         </ul>
 
         <div class="halo-actions">

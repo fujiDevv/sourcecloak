@@ -17,7 +17,7 @@ describe('sanitizeSettings', () => {
 
     const sanitized = sanitizeSettings(raw, 'community');
 
-    expect(sanitized.useOnnxClassifier).toBe(false);
+    expect(sanitized.useOnnxClassifier).toBe(true);
     expect(sanitized.useGeminiNano).toBe(false);
     expect(sanitized.customPatterns).toEqual([]);
     expect(sanitized.corporateSignatures).toEqual([]);

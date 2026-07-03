@@ -134,17 +134,54 @@ body {
 .badge.ready { color: #000000; background: #ffffff; }
 .badge.loading { color: #000000; background: #a3a3a3; }
 
-.gemini-row { margin-top: 4px; }
-.badge.gemini-available,
-.badge.gemini-downloadable { color: #86efac; border: 1px solid rgba(134, 239, 172, 0.35); background: transparent; }
-.badge.gemini-downloading,
-.badge.gemini-checking,
-.badge.gemini-unknown { color: #fde68a; border: 1px solid rgba(253, 230, 138, 0.35); background: transparent; }
-.badge.gemini-unavailable { color: #fca5a5; border: 1px solid rgba(252, 165, 165, 0.35); background: transparent; }
+.ai-status-banner {
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.03);
+}
 
-.gemini-hint { margin: 8px 0 0; font-size: 11px; color: var(--muted); line-height: 1.4; }
-.gemini-hint a.flag-link { color: var(--accent); text-decoration: underline; }
-.gemini-hint code { font-size: 10px; padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border); }
+.ai-status-banner.ai-banner-enhanced {
+  border-color: rgba(134, 239, 172, 0.35);
+  background: rgba(22, 101, 52, 0.18);
+}
+
+.ai-status-banner.ai-banner-optimized {
+  border-color: rgba(147, 197, 253, 0.35);
+  background: rgba(30, 64, 175, 0.18);
+}
+
+.ai-status-banner.ai-banner-fallback {
+  border-color: rgba(253, 230, 138, 0.35);
+  background: rgba(120, 53, 15, 0.18);
+}
+
+.ai-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.ai-status-label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ai-status-desc {
+  margin: 8px 0 0;
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.45;
+}
+
+.badge.ai-tier-enhanced { color: #86efac; border: 1px solid rgba(134, 239, 172, 0.35); background: transparent; }
+.badge.ai-tier-optimized { color: #93c5fd; border: 1px solid rgba(147, 197, 253, 0.35); background: transparent; }
+.badge.ai-tier-fallback { color: #fde68a; border: 1px solid rgba(253, 230, 138, 0.35); background: transparent; }
+
+.ai-status-desc a.flag-link { color: var(--accent); text-decoration: underline; }
+.ai-status-desc code { font-size: 10px; padding: 1px 4px; border-radius: 3px; border: 1px solid var(--border); }
 
 .recent-list {
   list-style: none;

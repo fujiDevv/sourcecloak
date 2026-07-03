@@ -1,6 +1,6 @@
 import { InputGuard } from './src/input-guard';
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from './src/constants';
-import { checkGeminiNanoAvailability, setMainWorldPort } from './src/ai';
+import { detectEnhancedAI, setMainWorldPort } from './src/ai';
 import type { AuditEntry, ClassificationResult, SourceCloakSettings } from './src/types';
 import { extensionApi, getRuntimeUrl } from './src/platform';
 
@@ -135,10 +135,13 @@ function handleRuntimeMessage(
 ): boolean {
   if (!checkContextOrCleanup()) return false;
 
-  if (message.type === 'sourcecloak-get-gemini-availability') {
+  if (message.type === 'sourcecloak-get-gemini-availability' || message.type === 'sourcecloak-detect-enhanced-ai') {
     ensureMainWorldBridge(true);
-    checkGeminiNanoAvailability()
-      .then((availability) => sendResponse({ success: true, availability }))
+    detectEnhancedAI()
+      .then((availability) => {
+        extensionApi.runtime.sendMessage({ type: 'update-enhanced-ai-availability', availability }).catch(() => {});
+        sendResponse({ success: true, availability });
+      })
       .catch(() => sendResponse({ success: true, availability: 'unavailable' }));
     return true;
   }
@@ -152,11 +155,23 @@ function handleRuntimeMessage(
   return false;
 }
 
+async function reportEnhancedAIAvailability(): Promise<void> {
+  if (!checkContextOrCleanup()) return;
+  if (window.location.protocol.startsWith('chrome-extension:') || window.location.protocol.startsWith('moz-extension:')) {
+    return;
+  }
+
+  ensureMainWorldBridge(true);
+  const availability = await detectEnhancedAI().catch(() => 'unavailable' as const);
+  await extensionApi.runtime.sendMessage({ type: 'update-enhanced-ai-availability', availability }).catch(() => {});
+}
+
 async function init(): Promise<void> {
   if (!checkContextOrCleanup()) return;
   await loadSettings();
   ensureMainWorldBridge();
   ensureGuard();
+  reportEnhancedAIAvailability().catch(() => {});
   extensionApi.storage.onChanged?.addListener(handleStorageChanged);
   extensionApi.runtime.onMessage?.addListener(handleRuntimeMessage);
 }

@@ -31,7 +31,7 @@ export function sanitizeSettings(settings: SourceCloakSettings, edition: Edition
 
   return {
     ...settings,
-    useOnnxClassifier: false,
+    useOnnxClassifier: true,
     useGeminiNano: false,
     customPatterns: [],
     corporateSignatures: [],

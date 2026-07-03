@@ -18,7 +18,7 @@ SourceCloak is an enterprise-grade Chrome extension that intercepts sensitive co
 <p align="center">
   <img src="https://img.shields.io/badge/Processing-100%25%20On--Device-0F766E?style=flat-square" alt="On-Device Processing" />
   <img src="https://img.shields.io/badge/Network-Zero%20Telemetry-1D4ED8?style=flat-square" alt="Zero Telemetry" />
-  <img src="https://img.shields.io/badge/AI-ONNX%20%2B%20Gemini%20Nano-7C3AED?style=flat-square" alt="Local AI Stack" />
+  <img src="https://img.shields.io/badge/AI-ONNX%20Baseline%20%2B%20Optional%20Gemini-7C3AED?style=flat-square" alt="Local AI Stack" />
   <img src="https://img.shields.io/badge/Audit-Local%20Only-92400E?style=flat-square" alt="Local Audit Log" />
 </p>
 
@@ -42,7 +42,7 @@ Engineering teams face constant pressure to prevent proprietary codebase exposur
 | **Paste interception** | Capture-phase `paste` blocking before network transmission |
 | **Advanced editor support** | Native safe-hooks for Monaco and CodeMirror (AI chat UIs) |
 | **Input monitoring** | Throttled continuous scanning of typed content |
-| **4-tier classifier** | Regex → token scoring → ONNX WASM → Gemini Nano semantic review |
+| **4-tier classifier** | Regex → token scoring → ONNX WASM (always on) → optional Gemini Nano enhancement |
 | **Corporate signatures** | Custom regex and internal config markers per organization |
 | **Domain policy** | Monitored and trusted domain lists for scoped enforcement |
 | **Policy Console** | Enterprise options dashboard for sensitivity, patterns, and audit review |
@@ -80,7 +80,9 @@ flowchart LR
 | 1 | Regex | SSH keys, AWS/GitHub/Stripe tokens, JWTs, `.env` secrets, DB URLs |
 | 2 | Token scorer | Proprietary token density, internal API markers, code blocks |
 | 3 | ONNX WASM | Structural heuristics via offscreen DistilBERT pipeline |
-| 4 | Gemini Nano | Optional semantic classification via Chrome Prompt API |
+| 4 | Gemini Nano | Optional semantic enhancement via Chrome Prompt API (never required) |
+
+Core protection uses Tier 1–3 on every modern Chrome install. Gemini Nano is cached-detected at install and updated via `ai_capability` storage — popup and Policy Console show green (enhanced), blue (optimized ONNX), or yellow (temporary fallback) status.
 
 ---
 
@@ -168,8 +170,8 @@ Open the **Policy Console** from the extension options page or popup.
 |---------|---------|---------|
 | Protection | Enabled | Master on/off switch |
 | Sensitivity | 65 | Block threshold (0 = strict, 100 = permissive) |
-| ONNX classifier | Enabled | Offscreen WASM structural analysis |
-| Gemini Nano | Enabled | Semantic review when Prompt API is available |
+| ONNX classifier | Always on | Offscreen WASM structural analysis (Community + Pro) |
+| Gemini Nano | Pro optional | Tier 4 enhancement when Prompt API is available |
 | Monitored domains | All | Restrict scanning to specific hosts |
 | Trusted domains | None | Bypass scanning for internal tools |
 | Corporate signatures | Empty | Organization-specific config markers |
@@ -207,11 +209,11 @@ All rights reserved. This software is proprietary and may not be copied, distrib
 
 ## Pricing
 
-SourceCloak **Community** is free (Tier 1–2 blocking on major AI chat sites). **Pro** is a **$24 lifetime** upgrade via ExtensionPay for ONNX, Gemini Nano, custom signatures, domain scope, and policy export.
+SourceCloak **Community** is free with Tier 1–3 ONNX protection on major AI chat sites. **Pro** is a **$24 lifetime** upgrade for custom signatures, domain scope, policy export, and full audit history — independent of Gemini Nano availability.
 
 See [PRICING.md](./PRICING.md) and [sourcecloak.com/pricing](https://sourcecloak.com/pricing).
 
-Upgrade in **Policy Console → Upgrade** via ExtensionPay. Scanned content still never leaves the browser.
+Upgrade in **Policy Console → Upgrade** via Lemon Squeezy. Scanned content still never leaves the browser.
 
 ## B2B Positioning
 

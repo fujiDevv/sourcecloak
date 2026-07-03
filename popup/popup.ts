@@ -1,7 +1,8 @@
+import type { AICapabilityRecord } from '../src/ai-capability';
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from '../src/constants';
-import { formatGeminiStatus, geminiFlagUrl, wireFlagLinks } from '../src/gemini-status';
+import { formatLocalAIStatus, geminiFlagUrl, wireFlagLinks } from '../src/gemini-status';
 import { extensionApi } from '../src/platform';
-import type { AuditEntry, Edition, GeminiAvailability, SourceCloakSettings, SourceCloakStats } from '../src/types';
+import type { AuditEntry, Edition, SourceCloakSettings, SourceCloakStats } from '../src/types';
 
 const enabledToggle = document.getElementById('toggle-enabled') as HTMLInputElement;
 const statusPill = document.getElementById('status-pill') as HTMLSpanElement;
@@ -11,64 +12,53 @@ const metricBlocks = document.getElementById('metric-blocks') as HTMLElement;
 const recentList = document.getElementById('recent-list') as HTMLUListElement;
 const openOptionsBtn = document.getElementById('open-options') as HTMLButtonElement;
 const exploreProBtn = document.getElementById('explore-pro') as HTMLButtonElement;
-const geminiStatusBlock = document.getElementById('gemini-status-block') as HTMLElement;
-const geminiStatus = document.getElementById('gemini-status') as HTMLElement;
-const geminiHint = document.getElementById('gemini-hint') as HTMLParagraphElement;
+const aiStatusBanner = document.getElementById('ai-status-banner') as HTMLElement;
+const aiStatusLabel = document.getElementById('ai-status-label') as HTMLSpanElement;
+const aiStatusTier = document.getElementById('ai-status-tier') as HTMLSpanElement;
+const aiStatusDesc = document.getElementById('ai-status-desc') as HTMLParagraphElement;
 
-function setGeminiStatusVisible(visible: boolean): void {
-  geminiStatusBlock.classList.toggle('hidden', !visible);
-  if (!visible) {
-    geminiHint.classList.add('hidden');
-    geminiHint.textContent = '';
-  }
-}
-
-function applyGeminiUi(availability: GeminiAvailability): void {
-  const info = formatGeminiStatus(availability);
-  geminiStatus.textContent = info.label;
-  geminiStatus.className = `badge gemini-${info.availability}`;
+function applyLocalAIStatus(capability: AICapabilityRecord): void {
+  const info = formatLocalAIStatus(capability);
+  aiStatusBanner.classList.remove('hidden', 'ai-banner-enhanced', 'ai-banner-optimized', 'ai-banner-fallback');
+  aiStatusBanner.classList.add(`ai-banner-${info.tier}`);
+  aiStatusLabel.textContent = info.label;
+  aiStatusTier.textContent = info.tier === 'enhanced' ? 'Gemini Nano' : 'ONNX';
+  aiStatusTier.className = `badge ai-tier-${info.tier}`;
 
   if (info.showFlagLink) {
-    geminiHint.classList.remove('hidden');
-    geminiHint.innerHTML = `${info.description} Enable <a href="${geminiFlagUrl()}" class="flag-link">Prompt API for Gemini Nano</a> in <code>chrome://flags</code>.`;
-    wireFlagLinks();
-  } else if (!info.ready && availability === 'downloading') {
-    geminiHint.classList.remove('hidden');
-    geminiHint.textContent = info.description;
+    aiStatusDesc.innerHTML = `${info.description} Enable <a href="${geminiFlagUrl()}" class="flag-link">Prompt API for Gemini Nano</a> in <code>chrome://flags</code> if you want Tier 4.`;
+    wireFlagLinks(aiStatusBanner);
   } else {
-    geminiHint.classList.add('hidden');
-    geminiHint.textContent = '';
+    aiStatusDesc.textContent = info.description;
   }
 }
 
-async function loadGeminiStatus(): Promise<void> {
-  if (geminiStatusBlock.classList.contains('hidden')) return;
-
-  applyGeminiUi('unknown');
+async function loadLocalAIStatus(): Promise<void> {
   const res = await extensionApi.runtime.sendMessage<{
     success?: boolean;
-    availability?: GeminiAvailability;
-    tabRestricted?: boolean;
-  }>({ type: 'get-gemini-availability' });
+    capability?: AICapabilityRecord;
+  }>({ type: 'get-ai-capability' });
 
-  if (res?.tabRestricted) {
-    applyGeminiUi('unavailable');
-    geminiHint.classList.remove('hidden');
-    geminiHint.innerHTML = `Open a regular webpage tab to detect Gemini Nano. Then enable <a href="${geminiFlagUrl()}" class="flag-link">Prompt API for Gemini Nano</a> in <code>chrome://flags</code> if needed.`;
-    wireFlagLinks();
+  if (res?.capability) {
+    applyLocalAIStatus(res.capability);
     return;
   }
 
-  applyGeminiUi(res?.availability ?? 'unavailable');
+  const refreshed = await extensionApi.runtime.sendMessage<{
+    success?: boolean;
+    capability?: AICapabilityRecord;
+  }>({ type: 'refresh-ai-capability' });
+
+  if (refreshed?.capability) {
+    applyLocalAIStatus(refreshed.capability);
+  }
 }
 
 function applyEditionUi(edition: Edition): void {
   const isPro = edition === 'pro';
   exploreProBtn.classList.toggle('hidden', isPro);
-  classifierStatus.textContent = isPro ? '4-Tier' : 'Tier 1–2';
+  classifierStatus.textContent = isPro ? '4-Tier' : 'Tier 1–3';
   classifierStatus.className = `badge ${isPro ? 'ready' : 'ready'}`;
-  setGeminiStatusVisible(isPro);
-  if (isPro) loadGeminiStatus().catch(console.error);
 }
 
 async function loadDashboard(): Promise<void> {
@@ -77,6 +67,7 @@ async function loadDashboard(): Promise<void> {
     extensionApi.runtime.sendMessage<{ success: boolean; stats: SourceCloakStats }>({ type: 'get-stats' }),
     extensionApi.runtime.sendMessage<{ success: boolean; entries: AuditEntry[] }>({ type: 'get-audit-log' }),
     extensionApi.runtime.sendMessage<{ success: boolean; edition: Edition }>({ type: 'get-edition' }),
+    loadLocalAIStatus(),
   ]);
 
   const edition = editionRes?.edition ?? settingsRes?.edition ?? 'community';
@@ -119,6 +110,13 @@ openOptionsBtn.addEventListener('click', () => {
 exploreProBtn.addEventListener('click', async () => {
   const optionsUrl = extensionApi.runtime.getURL('options/options.html?halo=1');
   await extensionApi.tabs.create({ url: optionsUrl });
+});
+
+extensionApi.storage.onChanged?.addListener((changes) => {
+  if (changes[STORAGE_KEYS.AI_CAPABILITY]) {
+    const capability = changes[STORAGE_KEYS.AI_CAPABILITY].newValue as AICapabilityRecord | undefined;
+    if (capability) applyLocalAIStatus(capability);
+  }
 });
 
 function escapeHtml(value: string): string {

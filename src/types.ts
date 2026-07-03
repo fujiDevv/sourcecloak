@@ -78,7 +78,11 @@ export type SourceCloakMessage =
   | { type: 'activate-license'; licenseKey: string }
   | { type: 'deactivate-license' }
   | { type: 'get-gemini-availability' }
+  | { type: 'get-ai-capability' }
+  | { type: 'refresh-ai-capability' }
+  | { type: 'update-enhanced-ai-availability'; availability: GeminiAvailability }
   | { type: 'sourcecloak-get-gemini-availability' }
+  | { type: 'sourcecloak-detect-enhanced-ai' }
   | { type: 'check-model-status' }
   | { type: 'update-model-progress'; state: string; progress: number }
   | { type: 'run-offscreen-classification'; text: string; settings: SourceCloakSettings }

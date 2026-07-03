@@ -1,3 +1,9 @@
+import {
+  DEFAULT_AI_CAPABILITY,
+  enhancedFromGeminiAvailability,
+  mergeAICapability,
+  type AICapabilityRecord,
+} from './src/ai-capability';
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from './src/constants';
 import { classifyWithRules } from './src/classifier';
 import { editionFromPaid, getAuditLimit, sanitizeSettings } from './src/edition';
@@ -10,7 +16,14 @@ import {
 } from './src/license-client';
 import { extensionApi, supportsOffscreenDocuments } from './src/platform';
 import { isDomainMatch } from './src/utils';
-import type { AuditEntry, ClassificationResult, Edition, SourceCloakSettings, SourceCloakStats } from './src/types';
+import type {
+  AuditEntry,
+  ClassificationResult,
+  Edition,
+  GeminiAvailability,
+  SourceCloakSettings,
+  SourceCloakStats,
+} from './src/types';
 
 const supportsOffscreen = supportsOffscreenDocuments();
 let creatingOffscreen: Promise<void> | null = null;
@@ -105,6 +118,72 @@ async function setupOffscreen(): Promise<void> {
   }
 }
 
+async function getAICapability(): Promise<AICapabilityRecord> {
+  const data = await extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.AI_CAPABILITY);
+  const stored = data[STORAGE_KEYS.AI_CAPABILITY] as AICapabilityRecord | undefined;
+  return stored ? { ...DEFAULT_AI_CAPABILITY, ...stored, enhanced: { ...DEFAULT_AI_CAPABILITY.enhanced, ...stored.enhanced } } : { ...DEFAULT_AI_CAPABILITY };
+}
+
+async function saveAICapability(capability: AICapabilityRecord): Promise<void> {
+  await extensionApi.storage.local.set({ [STORAGE_KEYS.AI_CAPABILITY]: capability });
+}
+
+async function probeOnnxState(): Promise<Pick<AICapabilityRecord, 'onnxReady' | 'onnxState'>> {
+  if (!supportsOffscreen) {
+    return { onnxReady: false, onnxState: 'unsupported' };
+  }
+
+  try {
+    await setupOffscreen();
+    const response = await extensionApi.runtime.sendMessage<{
+      success?: boolean;
+      state?: AICapabilityRecord['onnxState'];
+    }>({ type: 'check-offscreen-model-status' });
+
+    const state = response?.state ?? 'idle';
+    return {
+      onnxState: state,
+      onnxReady: state === 'ready',
+    };
+  } catch {
+    return { onnxReady: false, onnxState: 'error' };
+  }
+}
+
+async function probeEnhancedAI(tabId?: number): Promise<GeminiAvailability> {
+  try {
+    let targetTabId = tabId;
+
+    if (!targetTabId) {
+      const [tab] = await extensionApi.tabs.query({ active: true, currentWindow: true });
+      if (!tab?.id || tab.url?.startsWith('chrome://') || tab.url?.startsWith('chrome-extension://')) {
+        return 'unavailable';
+      }
+      targetTabId = tab.id;
+    }
+
+    const detected = await extensionApi.tabs.sendMessage<{
+      success?: boolean;
+      availability?: GeminiAvailability;
+    }>(targetTabId, { type: 'sourcecloak-detect-enhanced-ai' });
+
+    return detected?.availability ?? 'unavailable';
+  } catch {
+    return 'unavailable';
+  }
+}
+
+async function refreshAICapability(tabId?: number): Promise<AICapabilityRecord> {
+  const [current, onnx] = await Promise.all([getAICapability(), probeOnnxState()]);
+  const availability = await probeEnhancedAI(tabId);
+  const next = mergeAICapability(current, {
+    ...onnx,
+    enhanced: enhancedFromGeminiAvailability(availability),
+  });
+  await saveAICapability(next);
+  return next;
+}
+
 async function classifyPayload(text: string, settings: SourceCloakSettings): Promise<ClassificationResult> {
   if (supportsOffscreen && (settings.useOnnxClassifier || settings.useGeminiNano)) {
     try {
@@ -167,6 +246,7 @@ extensionApi.runtime.onInstalled?.addListener(async (details) => {
   if (settings.enabled && supportsOffscreen) {
     setupOffscreen().catch(() => {});
   }
+  refreshAICapability().catch(() => {});
 });
 
 extensionApi.runtime.onStartup?.addListener(async () => {
@@ -175,6 +255,7 @@ extensionApi.runtime.onStartup?.addListener(async () => {
   if (settings.enabled && supportsOffscreen) {
     setupOffscreen().catch(() => {});
   }
+  refreshAICapability().catch(() => {});
 });
 
 extensionApi.storage.onChanged?.addListener((changes) => {
@@ -262,24 +343,64 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
     return true;
   }
 
+  if (message.type === 'get-ai-capability') {
+    getAICapability()
+      .then((capability) => sendResponse({ success: true, capability }))
+      .catch((err: Error) => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
+  if (message.type === 'refresh-ai-capability') {
+    refreshAICapability()
+      .then((capability) => sendResponse({ success: true, capability }))
+      .catch((err: Error) => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
+  if (message.type === 'update-enhanced-ai-availability') {
+    (async () => {
+      const availability = message.availability as GeminiAvailability;
+      const current = await getAICapability();
+      const onnx = await probeOnnxState();
+      const next = mergeAICapability(current, {
+        ...onnx,
+        enhanced: enhancedFromGeminiAvailability(availability),
+      });
+      await saveAICapability(next);
+      sendResponse({ success: true, capability: next });
+    })().catch((err: Error) => sendResponse({ success: false, error: err.message }));
+    return true;
+  }
+
   if (message.type === 'get-gemini-availability') {
     (async () => {
       try {
-        const [tab] = await extensionApi.tabs.query({ active: true, currentWindow: true });
-        if (!tab?.id || tab.url?.startsWith('chrome://') || tab.url?.startsWith('chrome-extension://')) {
-          sendResponse({ success: true, availability: 'unavailable', tabRestricted: true });
+        const capability = await getAICapability();
+        if (capability.enhanced.checkedAt > 0 && capability.enhanced.geminiAvailability !== 'unknown') {
+          sendResponse({
+            success: true,
+            availability: capability.enhanced.geminiAvailability,
+            capability,
+          });
           return;
         }
-        const res = await extensionApi.tabs.sendMessage<{ success?: boolean; availability?: string }>(tab.id, {
-          type: 'sourcecloak-get-gemini-availability',
-        });
+
+        const [tab] = await extensionApi.tabs.query({ active: true, currentWindow: true });
+        if (!tab?.id || tab.url?.startsWith('chrome://') || tab.url?.startsWith('chrome-extension://')) {
+          sendResponse({ success: true, availability: 'unavailable', tabRestricted: true, capability });
+          return;
+        }
+
+        const refreshed = await refreshAICapability(tab.id);
         sendResponse({
           success: true,
-          availability: res?.availability ?? 'unavailable',
+          availability: refreshed.enhanced.geminiAvailability,
           tabUrl: tab.url,
+          capability: refreshed,
         });
       } catch {
-        sendResponse({ success: true, availability: 'unavailable', tabRestricted: false });
+        const capability = await getAICapability();
+        sendResponse({ success: true, availability: 'unavailable', tabRestricted: false, capability });
       }
     })();
     return true;
@@ -299,10 +420,29 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
   }
 
   if (message.type === 'update-model-progress') {
-    extensionApi.storage.local.set({
-      [STORAGE_KEYS.MODEL_STATE]: message.state,
-      [STORAGE_KEYS.MODEL_PROGRESS]: message.progress
-    }).catch(() => {});
+    (async () => {
+      await extensionApi.storage.local.set({
+        [STORAGE_KEYS.MODEL_STATE]: message.state,
+        [STORAGE_KEYS.MODEL_PROGRESS]: message.progress,
+      });
+
+      const current = await getAICapability();
+      const state = message.state as AICapabilityRecord['onnxState'];
+      const next = mergeAICapability(current, {
+        onnxState: state,
+        onnxReady: state === 'ready',
+      });
+      await saveAICapability(next);
+    })().catch(() => {});
+    return false;
+  }
+
+  if (message.type === 'log-gemini-fallback') {
+    (async () => {
+      const data = await extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.AI_FALLBACK_LOGGED);
+      if (data[STORAGE_KEYS.AI_FALLBACK_LOGGED]) return;
+      await extensionApi.storage.local.set({ [STORAGE_KEYS.AI_FALLBACK_LOGGED]: Date.now() });
+    })().catch(() => {});
     return false;
   }
 

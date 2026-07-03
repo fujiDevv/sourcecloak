@@ -29,6 +29,45 @@
       port.onmessage = async (event) => {
         if (!event.data) return;
 
+        if (event.data.type === 'SOURCECLOAK_AI_DETECT_ENHANCED_REQUEST') {
+          const lm = getLanguageModel();
+          let availability: string = 'unavailable';
+          let sessionReady = false;
+
+          if (lm) {
+            try {
+              if (typeof lm.availability === 'function') {
+                availability = await lm.availability({
+                  expectedOutputs: [{ type: 'text', languages: ['en'] }]
+                });
+              } else if (typeof lm.capabilities === 'function') {
+                const caps = await lm.capabilities({ expectedOutputs: [{ type: 'text', languages: ['en'] }] });
+                availability = caps.available;
+              }
+
+              if (availability === 'available' || availability === 'downloadable') {
+                const session = await lm.create({
+                  expectedOutputs: [{ type: 'text', languages: ['en'] }]
+                });
+                sessionReady = true;
+                if (typeof session.destroy === 'function') await session.destroy();
+                else if (typeof session.close === 'function') await session.close();
+              }
+            } catch (err) {
+              console.warn('[SourceCloak] Enhanced AI detection failed:', err);
+              availability = 'unavailable';
+              sessionReady = false;
+            }
+          }
+
+          port.postMessage({
+            type: 'SOURCECLOAK_AI_DETECT_ENHANCED_RESPONSE',
+            id: event.data.id,
+            availability,
+            sessionReady,
+          });
+        }
+
         if (event.data.type === 'SOURCECLOAK_AI_AVAILABILITY_REQUEST') {
           const lm = getLanguageModel();
           let availability: string = 'unavailable';

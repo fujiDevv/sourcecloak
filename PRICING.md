@@ -2,22 +2,30 @@
 
 SourceCloak **Community** is free. **Pro** is a **$24 lifetime** upgrade handled by [Lemon Squeezy](https://www.lemonsqueezy.com).
 
+> Core features and the full Pro experience work on any modern Chrome. Enhanced semantic AI (Gemini Nano) activates automatically on supported devices (recent hardware, Chrome 128+). No cloud required.
+
 ## Community (Free)
 
 - Tier 1 regex + Tier 2 token scorer
+- Tier 3 ONNX WASM classifier (always on)
 - Paste and input interception on major AI chat sites
 - Warning overlay and local audit (latest 50 events)
 - 100% on-device classification
 
 ## Pro — $24 lifetime
 
-- Tier 3 ONNX WASM classifier
-- Tier 4 Gemini Nano semantic review (when available in Chrome)
+Pro value does **not** depend on Gemini Nano. You get the full policy stack on every device:
+
 - Custom regex and corporate signatures
 - Monitored and trusted domain lists
-- Policy export/import
+- Policy export/import for teams
 - Full audit history (500 entries)
 - Full sensitivity range
+- Optional Tier 4 Gemini Nano semantic review when your Chrome build supports it
+
+## Device compatibility
+
+Run the [device compatibility test](https://sourcecloak.com/compatibility) or open **Policy Console → Re-check capability** to see whether enhanced Gemini Nano is available on your hardware.
 
 ## How to upgrade
 
@@ -28,7 +36,7 @@ SourceCloak **Community** is free. **Pro** is a **$24 lifetime** upgrade handled
 5. Paste the license key in Policy Console and click **Activate**
 6. Use **Deactivate on this device** to move the license to another browser
 
-**No refunds:** All Pro sales are final. Evaluate the free Community edition before purchasing.
+**Refund policy:** If enhanced AI is not available on your device and you are not satisfied with the baseline Pro experience, contact support within 14 days for a full refund.
 
 Details: [sourcecloak.com/pricing](https://sourcecloak.com/pricing) · [Terms](https://sourcecloak.com/terms)
 

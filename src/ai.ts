@@ -7,6 +7,60 @@ export function setMainWorldPort(port: MessagePort): void {
   mainWorldPort.start();
 }
 
+import type { GeminiAvailability } from './types';
+
+export async function detectEnhancedAI(): Promise<GeminiAvailability> {
+  if (typeof window === 'undefined') return 'unavailable';
+  if (window.location.protocol.startsWith('chrome-extension:') || window.location.protocol.startsWith('moz-extension:')) {
+    return 'unavailable';
+  }
+
+  if (!mainWorldPort) {
+    return checkGeminiNanoAvailability();
+  }
+
+  return new Promise((resolve) => {
+    const requestId = Math.random().toString(36).slice(2);
+    let resolved = false;
+
+    const handler = (event: MessageEvent) => {
+      if (resolved) return;
+      if (
+        !event.data ||
+        event.data.type !== 'SOURCECLOAK_AI_DETECT_ENHANCED_RESPONSE' ||
+        event.data.id !== requestId
+      ) return;
+
+      resolved = true;
+      mainWorldPort!.removeEventListener('message', handler);
+
+      const availability = event.data.availability as GeminiAvailability;
+      if (event.data.sessionReady && (availability === 'available' || availability === 'downloadable')) {
+        resolve(availability);
+        return;
+      }
+
+      if (availability === 'downloading') {
+        resolve('downloading');
+        return;
+      }
+
+      resolve(availability === 'available' || availability === 'downloadable' ? availability : 'unavailable');
+    };
+
+    mainWorldPort!.addEventListener('message', handler);
+    mainWorldPort!.postMessage({ type: 'SOURCECLOAK_AI_DETECT_ENHANCED_REQUEST', id: requestId });
+
+    setTimeout(() => {
+      if (!resolved) {
+        resolved = true;
+        mainWorldPort!.removeEventListener('message', handler);
+        resolve('unavailable');
+      }
+    }, 4000);
+  });
+}
+
 export async function checkGeminiNanoAvailability(): Promise<'available' | 'downloadable' | 'downloading' | 'unavailable'> {
   const lm = (globalThis as { LanguageModel?: { availability?: (opts: unknown) => Promise<string> } }).LanguageModel
     || (typeof window !== 'undefined' ? (window as { LanguageModel?: { availability?: (opts: unknown) => Promise<string> } }).LanguageModel : null);

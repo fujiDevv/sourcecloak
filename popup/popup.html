@@ -18,6 +18,14 @@
       <div id="status-pill" class="status-pill active">Active</div>
     </header>
 
+    <section class="ai-status-banner hidden" id="ai-status-banner">
+      <div class="ai-status-row">
+        <span id="ai-status-label" class="ai-status-label">Optimized local AI active</span>
+        <span id="ai-status-tier" class="badge ai-tier-optimized">ONNX</span>
+      </div>
+      <p id="ai-status-desc" class="ai-status-desc">Tier 1–3 protection runs on-device. Gemini Nano is an optional enhancement.</p>
+    </section>
+
     <section class="metric-grid">
       <article class="metric-card">
         <span class="metric-label">Scans</span>
@@ -39,13 +47,8 @@
       </div>
       <div class="panel-row">
         <span>Classifier</span>
-        <span id="classifier-status" class="badge ready">Tier 1–2</span>
+        <span id="classifier-status" class="badge ready">Tier 1–3</span>
       </div>
-      <div class="panel-row gemini-row hidden" id="gemini-status-block">
-        <span>Gemini Nano</span>
-        <span id="gemini-status" class="badge gemini-checking">Checking…</span>
-      </div>
-      <p id="gemini-hint" class="hint gemini-hint hidden"></p>
     </section>
 
     <section class="panel">

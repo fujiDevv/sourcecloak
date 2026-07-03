@@ -1,14 +1,16 @@
 import {
   COMMUNITY_MAX_SENSITIVITY,
   DEFAULT_SETTINGS,
-  NO_REFUND_NOTICE,
+  DEVICE_COMPATIBILITY_URL,
   PRO_PRICE,
+  REFUND_POLICY,
   STORAGE_KEYS,
 } from '../src/constants';
+import type { AICapabilityRecord } from '../src/ai-capability';
 import { sanitizeSettings } from '../src/edition';
-import { formatGeminiStatus, geminiFlagUrl, wireFlagLinks } from '../src/gemini-status';
+import { formatLocalAIStatus, geminiFlagUrl, wireFlagLinks } from '../src/gemini-status';
 import { extensionApi } from '../src/platform';
-import type { AuditEntry, Edition, GeminiAvailability, SourceCloakSettings } from '../src/types';
+import type { AuditEntry, Edition, SourceCloakSettings } from '../src/types';
 
 const tabs = Array.from(document.querySelectorAll<HTMLButtonElement>('.nav-btn[data-tab]'));
 const tabSections = Array.from(document.querySelectorAll<HTMLElement>('.tab'));
@@ -37,43 +39,51 @@ const haloDeactivate = document.getElementById('halo-deactivate') as HTMLButtonE
 
 let currentEdition: Edition = 'community';
 
-const geminiStatusBlock = document.getElementById('gemini-status-block') as HTMLDivElement;
-const geminiAvailability = document.getElementById('gemini-availability') as HTMLSpanElement;
-const geminiAvailabilityDesc = document.getElementById('gemini-availability-desc') as HTMLParagraphElement;
-const geminiFlagHint = document.getElementById('gemini-flag-hint') as HTMLParagraphElement;
-const geminiFlagLink = document.getElementById('gemini-flag-link') as HTMLAnchorElement;
+const welcomeBanner = document.getElementById('welcome-banner') as HTMLElement;
+const welcomeDismiss = document.getElementById('welcome-dismiss') as HTMLButtonElement;
+const aiCapabilityBanner = document.getElementById('ai-capability-banner') as HTMLElement;
+const aiCapabilityLabel = document.getElementById('ai-capability-label') as HTMLHeadingElement;
+const aiCapabilityTier = document.getElementById('ai-capability-tier') as HTMLSpanElement;
+const aiCapabilityDesc = document.getElementById('ai-capability-desc') as HTMLParagraphElement;
+const refreshAICapabilityBtn = document.getElementById('refresh-ai-capability') as HTMLButtonElement;
+const compatibilityLink = document.getElementById('compatibility-link') as HTMLAnchorElement;
 
-function setGeminiStatusVisible(visible: boolean): void {
-  geminiStatusBlock.classList.toggle('hidden', !visible);
-}
+function applyCapabilityUi(capability: AICapabilityRecord): void {
+  const info = formatLocalAIStatus(capability);
+  aiCapabilityBanner.classList.remove('ai-banner-enhanced', 'ai-banner-optimized', 'ai-banner-fallback');
+  aiCapabilityBanner.classList.add(`ai-banner-${info.tier}`);
+  aiCapabilityLabel.textContent = info.label;
+  aiCapabilityTier.textContent = info.tier === 'enhanced' ? 'Gemini Nano' : 'ONNX';
+  aiCapabilityTier.className = `status-pill ai-tier-${info.tier}`;
 
-function applyGeminiAvailabilityUi(availability: GeminiAvailability, tabRestricted = false): void {
-  const info = formatGeminiStatus(availability);
-  geminiAvailability.textContent = info.label;
-  geminiAvailability.className = `status-pill gemini-${info.availability}`;
-
-  if (tabRestricted) {
-    geminiAvailabilityDesc.textContent = 'Open a regular webpage tab, then refresh this page to detect Gemini Nano.';
-    geminiFlagHint.classList.remove('hidden');
-    return;
+  if (info.showFlagLink) {
+    aiCapabilityDesc.innerHTML = `${info.description} Enable <a href="${geminiFlagUrl()}" class="flag-link">Prompt API for Gemini Nano</a> in <code>chrome://flags</code> for Tier 4.`;
+    wireFlagLinks(aiCapabilityBanner);
+  } else {
+    aiCapabilityDesc.textContent = info.description;
   }
-
-  geminiAvailabilityDesc.textContent = info.description;
-  geminiFlagHint.classList.toggle('hidden', !info.showFlagLink);
 }
 
-async function loadGeminiAvailability(): Promise<void> {
-  if (geminiStatusBlock.classList.contains('hidden')) return;
-
-  applyGeminiAvailabilityUi('unknown');
+async function loadAICapability(forceRefresh = false): Promise<void> {
+  const type = forceRefresh ? 'refresh-ai-capability' : 'get-ai-capability';
   const res = await extensionApi.runtime.sendMessage<{
     success?: boolean;
-    availability?: GeminiAvailability;
-    tabRestricted?: boolean;
-  }>({ type: 'get-gemini-availability' });
+    capability?: AICapabilityRecord;
+  }>({ type });
 
-  applyGeminiAvailabilityUi(res?.availability ?? 'unavailable', !!res?.tabRestricted);
-  wireFlagLinks();
+  if (res?.capability) {
+    applyCapabilityUi(res.capability);
+  }
+}
+
+async function maybeShowWelcomeBanner(): Promise<void> {
+  const params = new URLSearchParams(window.location.search);
+  const data = await extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.WELCOME_SEEN);
+  const seen = !!data[STORAGE_KEYS.WELCOME_SEEN];
+
+  if (params.get('welcome') === '1' || params.get('compat') === '1' || !seen) {
+    welcomeBanner.classList.remove('hidden');
+  }
 }
 
 function linesToArray(value: string): string[] {
@@ -90,7 +100,7 @@ function readForm(): SourceCloakSettings {
     blockPaste: (document.getElementById('block-paste') as HTMLInputElement).checked,
     blockInput: (document.getElementById('block-input') as HTMLInputElement).checked,
     showWarningOverlay: (document.getElementById('show-warning') as HTMLInputElement).checked,
-    useOnnxClassifier: (document.getElementById('use-onnx') as HTMLInputElement).checked,
+    useOnnxClassifier: true,
     useGeminiNano: (document.getElementById('use-gemini') as HTMLInputElement).checked,
     sensitivity: Number(sensitivity.value),
     organizationName: (document.getElementById('organization-name') as HTMLInputElement).value.trim() || DEFAULT_SETTINGS.organizationName,
@@ -107,7 +117,7 @@ function applyForm(settings: SourceCloakSettings): void {
   (document.getElementById('block-paste') as HTMLInputElement).checked = settings.blockPaste;
   (document.getElementById('block-input') as HTMLInputElement).checked = settings.blockInput;
   (document.getElementById('show-warning') as HTMLInputElement).checked = settings.showWarningOverlay;
-  (document.getElementById('use-onnx') as HTMLInputElement).checked = settings.useOnnxClassifier;
+  (document.getElementById('use-onnx') as HTMLInputElement).checked = true;
   (document.getElementById('use-gemini') as HTMLInputElement).checked = settings.useGeminiNano;
   sensitivity.value = String(settings.sensitivity);
   sensitivityValue.textContent = String(settings.sensitivity);
@@ -144,8 +154,7 @@ function applyEditionUi(edition: Edition, customerEmail?: string): void {
     haloProEmail.textContent = '';
   }
 
-  setGeminiStatusVisible(isPro);
-  if (isPro) loadGeminiAvailability().catch(console.error);
+  loadAICapability().catch(console.error);
 }
 
 function openHalo(): void {
@@ -384,22 +393,46 @@ function escapeHtml(value: string): string {
 }
 
 haloPrice.textContent = `$${PRO_PRICE}`;
-haloRefundNotice.textContent = NO_REFUND_NOTICE;
+haloRefundNotice.textContent = REFUND_POLICY;
 versionTag.textContent = `v${extensionApi.runtime.getManifest()?.version ?? '1.0.0'}`;
+compatibilityLink.href = DEVICE_COMPATIBILITY_URL;
+
+welcomeDismiss.addEventListener('click', async () => {
+  welcomeBanner.classList.add('hidden');
+  await extensionApi.storage.local.set({ [STORAGE_KEYS.WELCOME_SEEN]: true });
+});
+
+refreshAICapabilityBtn.addEventListener('click', async () => {
+  refreshAICapabilityBtn.disabled = true;
+  await loadAICapability(true);
+  refreshAICapabilityBtn.disabled = false;
+});
+
+extensionApi.storage.onChanged?.addListener((changes) => {
+  if (changes[STORAGE_KEYS.AI_CAPABILITY]) {
+    const capability = changes[STORAGE_KEYS.AI_CAPABILITY].newValue as AICapabilityRecord | undefined;
+    if (capability) applyCapabilityUi(capability);
+  }
+});
 
 const params = new URLSearchParams(window.location.search);
 if (params.get('welcome') === '1' || params.get('halo') === '1' || window.location.hash === '#upgrade') {
   openHalo();
 }
 
-geminiFlagLink.href = geminiFlagUrl();
+if (params.get('compat') === '1') {
+  loadAICapability(true).catch(console.error);
+}
+
 wireFlagLinks();
 
 loadSettings();
 loadAudit();
+maybeShowWelcomeBanner().catch(console.error);
 
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'visible') {
     loadSettings();
+    loadAICapability().catch(console.error);
   }
 });

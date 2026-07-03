@@ -113,6 +113,9 @@ async function runFullClassification(text: string, settings: SourceCloakSettings
 
   if (settings.useGeminiNano && text.length >= 48 && (result.score >= 0.45 || result.matches.length > 0)) {
     const gemini = await classifyWithGeminiNano(text);
+    if (!gemini) {
+      extensionApi.runtime.sendMessage({ type: 'log-gemini-fallback' }).catch(() => {});
+    }
     if (gemini) {
       const threshold = 0.9 - (settings.sensitivity / 100) * 0.45;
       const geminiResult: ClassificationResult = {
