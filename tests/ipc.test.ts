@@ -45,8 +45,9 @@ describe('ipc sender validation', () => {
     expect(isServiceWorkerSender(offscreen)).toBe(false);
   });
 
-  it('accepts service worker senders', () => {
+  it('accepts service worker senders without html url', () => {
     const sw = sender({ url: `chrome-extension://${EXT_ID}/background.js` });
     expect(isServiceWorkerSender(sw)).toBe(true);
+    expect(isExtensionPageSender(sw)).toBe(false);
   });
 });

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "SourceCloak",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Air-gapped client-side defense blocking proprietary code exposures before transmission.",
   "permissions": [
     "storage",

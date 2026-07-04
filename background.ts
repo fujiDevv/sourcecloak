@@ -264,7 +264,7 @@ extensionApi.runtime.onStartup?.addListener(async () => {
   refreshAICapability().catch(() => {});
 });
 
-extensionApi.storage.onChanged?.addListener((changes) => {
+extensionApi.storage.onChanged?.addListener((changes: Record<string, chrome.storage.StorageChange>) => {
   if (!changes[STORAGE_KEYS.SETTINGS]) return;
   const settings = changes[STORAGE_KEYS.SETTINGS].newValue as SourceCloakSettings | undefined;
   if (settings?.enabled && supportsOffscreen) {
@@ -272,10 +272,15 @@ extensionApi.storage.onChanged?.addListener((changes) => {
   }
 });
 
+function isTrustedReader(sender: chrome.runtime.MessageSender): boolean {
+  return isExtensionPageSender(sender) || isContentScriptSender(sender);
+}
+
 extensionApi.runtime.onMessage?.addListener((message, sender, sendResponse) => {
   if (!isExtensionSender(sender)) return false;
 
   if (message.type === 'get-settings') {
+    if (!isTrustedReader(sender)) return false;
     Promise.all([getSettings(), getEdition()])
       .then(([settings, edition]) => sendResponse({ success: true, settings, edition }))
       .catch((err: Error) => sendResponse({ success: false, error: err.message }));
@@ -283,6 +288,7 @@ extensionApi.runtime.onMessage?.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'get-edition') {
+    if (!isExtensionPageSender(sender)) return false;
     getEdition()
       .then((edition) => sendResponse({ success: true, edition }))
       .catch((err: Error) => sendResponse({ success: false, error: err.message }));
@@ -290,6 +296,7 @@ extensionApi.runtime.onMessage?.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'get-license-status') {
+    if (!isExtensionPageSender(sender)) return false;
     getLicenseStatus()
       .then((status) => sendResponse({ success: true, ...status }))
       .catch((err: Error) => sendResponse({ success: false, error: err.message }));
@@ -335,6 +342,7 @@ extensionApi.runtime.onMessage?.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'get-stats') {
+    if (!isExtensionPageSender(sender)) return false;
     getStats().then((stats) => sendResponse({ success: true, stats })).catch((err: Error) => {
       sendResponse({ success: false, error: err.message });
     });
@@ -342,6 +350,7 @@ extensionApi.runtime.onMessage?.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'get-audit-log') {
+    if (!isExtensionPageSender(sender)) return false;
     Promise.all([
       extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.AUDIT_LOG),
       getEdition(),
@@ -355,6 +364,7 @@ extensionApi.runtime.onMessage?.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'get-ai-capability') {
+    if (!isExtensionPageSender(sender)) return false;
     getAICapability()
       .then((capability) => sendResponse({ success: true, capability }))
       .catch((err: Error) => sendResponse({ success: false, error: err.message }));
@@ -362,6 +372,7 @@ extensionApi.runtime.onMessage?.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'refresh-ai-capability') {
+    if (!isExtensionPageSender(sender)) return false;
     refreshAICapability()
       .then((capability) => sendResponse({ success: true, capability }))
       .catch((err: Error) => sendResponse({ success: false, error: err.message }));
@@ -385,6 +396,7 @@ extensionApi.runtime.onMessage?.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === 'get-gemini-availability') {
+    if (!isExtensionPageSender(sender)) return false;
     (async () => {
       try {
         const capability = await getAICapability();

@@ -408,7 +408,7 @@ refreshAICapabilityBtn.addEventListener('click', async () => {
   refreshAICapabilityBtn.disabled = false;
 });
 
-extensionApi.storage.onChanged?.addListener((changes) => {
+extensionApi.storage.onChanged?.addListener((changes: Record<string, chrome.storage.StorageChange>) => {
   if (changes[STORAGE_KEYS.AI_CAPABILITY]) {
     const capability = changes[STORAGE_KEYS.AI_CAPABILITY].newValue as AICapabilityRecord | undefined;
     if (capability) applyCapabilityUi(capability);

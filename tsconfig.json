@@ -4,6 +4,8 @@
     "module": "ESNext",
     "moduleResolution": "bundler",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "types": ["chrome", "node"],
+    "typeRoots": ["./node_modules/@types"],
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -11,6 +13,7 @@
     "noEmit": true
   },
   "include": [
+    "env.d.ts",
     "src/**/*",
     "content.ts",
     "main_world.ts",
@@ -18,6 +21,8 @@
     "popup/popup.ts",
     "offscreen.ts",
     "options/options.ts",
-    "tests/**/*"
+    "tests/**/*",
+    "e2e/**/*",
+    "playwright.config.ts"
   ]
 }

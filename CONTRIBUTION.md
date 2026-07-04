@@ -69,7 +69,7 @@ Tests live in `tests/` (not `__tests__/` — Chrome reserves `_`-prefixed paths 
 npm run verify
 ```
 
-Runs type-check and unit tests together.
+Runs type-check, unit tests, and a production build.
 
 ### 5. Production build
 
@@ -165,7 +165,7 @@ Add coverage in `tests/patterns.test.ts` or `tests/classifier.test.ts` for every
 Before submitting a PR:
 
 - [ ] `npm run verify` passes
-- [ ] `npm run build` succeeds and `dist/` loads in Chrome without errors
+- [ ] `dist/` loads in Chrome without errors after verify
 - [ ] New detection rules include unit tests
 - [ ] No `_`-prefixed folders added to the extension package
 - [ ] No remote telemetry or payload exfiltration introduced
@@ -183,6 +183,13 @@ Include:
 1. **What** changed
 2. **Why** it was needed
 3. **How** to test (build steps, sample payload, expected block behavior)
+
+### Before a Chrome Web Store release
+
+- [ ] `npm run verify` passes
+- [ ] `npm run test:e2e` passes (after build)
+- [ ] Extension version in `package.json` and `src/manifest.json` matches the web changelog
+- [ ] Manual paste smoke test on a monitored AI host (blocked credential + allowed benign paste)
 
 ---
 

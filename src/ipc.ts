@@ -8,7 +8,8 @@ export function isExtensionSender(sender: chrome.runtime.MessageSender): boolean
 export function isExtensionPageSender(sender: chrome.runtime.MessageSender): boolean {
   if (!isExtensionSender(sender)) return false;
   const prefix = `chrome-extension://${sender.id}/`;
-  return Boolean(sender.url?.startsWith(prefix));
+  if (!sender.url?.startsWith(prefix)) return false;
+  return sender.url.includes('.html');
 }
 
 /** Content script in a tab (page URL, not chrome-extension://) */
