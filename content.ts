@@ -2,6 +2,7 @@ import { InputGuard } from './src/input-guard';
 import { DEFAULT_SETTINGS, STORAGE_KEYS } from './src/constants';
 import { detectEnhancedAI, setMainWorldPort } from './src/ai';
 import type { AuditEntry, ClassificationResult, SourceCloakSettings } from './src/types';
+import { isExtensionSender } from './src/ipc';
 import { extensionApi, getRuntimeUrl } from './src/platform';
 
 let currentSettings: SourceCloakSettings = { ...DEFAULT_SETTINGS };
@@ -130,10 +131,11 @@ function handleStorageChanged(changes: Record<string, chrome.storage.StorageChan
 
 function handleRuntimeMessage(
   message: { type?: string },
-  _sender: chrome.runtime.MessageSender,
+  sender: chrome.runtime.MessageSender,
   sendResponse: (response?: unknown) => void
 ): boolean {
   if (!checkContextOrCleanup()) return false;
+  if (!isExtensionSender(sender)) return false;
 
   if (message.type === 'sourcecloak-get-gemini-availability' || message.type === 'sourcecloak-detect-enhanced-ai') {
     ensureMainWorldBridge(true);

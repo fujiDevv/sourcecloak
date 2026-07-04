@@ -14,6 +14,12 @@ import {
   isProUser,
   openProCheckoutPage,
 } from './src/license-client';
+import {
+  isContentScriptSender,
+  isExtensionPageSender,
+  isExtensionSender,
+  isOffscreenSender,
+} from './src/ipc';
 import { extensionApi, supportsOffscreenDocuments } from './src/platform';
 import { isDomainMatch } from './src/utils';
 import type {
@@ -266,7 +272,9 @@ extensionApi.storage.onChanged?.addListener((changes) => {
   }
 });
 
-extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => {
+extensionApi.runtime.onMessage?.addListener((message, sender, sendResponse) => {
+  if (!isExtensionSender(sender)) return false;
+
   if (message.type === 'get-settings') {
     Promise.all([getSettings(), getEdition()])
       .then(([settings, edition]) => sendResponse({ success: true, settings, edition }))
@@ -289,6 +297,7 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
   }
 
   if (message.type === 'open-checkout-page') {
+    if (!isExtensionPageSender(sender)) return false;
     openProCheckoutPage()
       .then(() => sendResponse({ success: true }))
       .catch((err: Error) => sendResponse({ success: false, error: err.message }));
@@ -296,6 +305,7 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
   }
 
   if (message.type === 'activate-license') {
+    if (!isExtensionPageSender(sender)) return false;
     const licenseKey = message.licenseKey as string;
     activateProLicense(licenseKey)
       .then(async (status) => {
@@ -317,6 +327,7 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
   }
 
   if (message.type === 'deactivate-license') {
+    if (!isExtensionPageSender(sender)) return false;
     deactivateProLicense()
       .then(() => sendResponse({ success: true, edition: 'community' as Edition }))
       .catch((err: Error) => sendResponse({ success: false, error: err.message }));
@@ -358,6 +369,7 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
   }
 
   if (message.type === 'update-enhanced-ai-availability') {
+    if (!isContentScriptSender(sender)) return false;
     (async () => {
       const availability = message.availability as GeminiAvailability;
       const current = await getAICapability();
@@ -407,6 +419,7 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
   }
 
   if (message.type === 'check-model-status') {
+    if (!isExtensionPageSender(sender)) return false;
     if (!supportsOffscreen) {
       sendResponse({ success: true, state: 'unsupported', progress: 0 });
       return false;
@@ -420,6 +433,7 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
   }
 
   if (message.type === 'update-model-progress') {
+    if (!isOffscreenSender(sender)) return false;
     (async () => {
       await extensionApi.storage.local.set({
         [STORAGE_KEYS.MODEL_STATE]: message.state,
@@ -438,6 +452,7 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
   }
 
   if (message.type === 'log-gemini-fallback') {
+    if (!isOffscreenSender(sender)) return false;
     (async () => {
       const data = await extensionApi.storage.local.get<Record<string, unknown>>(STORAGE_KEYS.AI_FALLBACK_LOGGED);
       if (data[STORAGE_KEYS.AI_FALLBACK_LOGGED]) return;
@@ -447,12 +462,14 @@ extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => 
   }
 
   if (message.type === 'record-sync-block') {
+    if (!isContentScriptSender(sender)) return false;
     updateStatsFromResult(message.result).catch(() => {});
     appendAuditEntry(message.entry).catch(() => {});
     return false;
   }
 
   if (message.type === 'classify-payload') {
+    if (!isContentScriptSender(sender)) return false;
     const { text, hostname, url, eventType, elementTag } = message;
 
     getSettings()

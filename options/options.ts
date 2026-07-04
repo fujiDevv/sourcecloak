@@ -227,7 +227,7 @@ async function loadAudit(): Promise<void> {
     return `<tr>
       <td>${new Date(entry.timestamp).toLocaleString()}</td>
       <td>${escapeHtml(entry.hostname)}</td>
-      <td>${entry.eventType}</td>
+      <td>${escapeHtml(entry.eventType)}</td>
       <td>${result}</td>
       <td>${escapeHtml(match)}</td>
     </tr>`;

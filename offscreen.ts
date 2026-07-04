@@ -4,6 +4,7 @@ import { classifyWithRules, mergeClassificationResults } from './src/classifier'
 import { classifyWithGeminiNano } from './src/ai';
 import { isMarkdownDocumentation } from './src/markdown-doc';
 import type { ClassificationResult, SourceCloakSettings } from './src/types';
+import { isServiceWorkerSender } from './src/ipc';
 import { extensionApi, getRuntimeUrl } from './src/platform';
 
 const wasmConfig = (env as Record<string, unknown> & {
@@ -139,7 +140,9 @@ async function runFullClassification(text: string, settings: SourceCloakSettings
   return result;
 }
 
-extensionApi.runtime.onMessage?.addListener((message, _sender, sendResponse) => {
+extensionApi.runtime.onMessage?.addListener((message, sender, sendResponse) => {
+  if (!isServiceWorkerSender(sender)) return false;
+
   if (message.type === 'run-offscreen-classification') {
     const { text, settings } = message as { text: string; settings: SourceCloakSettings };
 

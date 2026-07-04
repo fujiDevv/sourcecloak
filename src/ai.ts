@@ -1,3 +1,4 @@
+import { isGeminiClassificationReady } from './gemini-ready';
 import { extensionApi } from './platform';
 
 let mainWorldPort: MessagePort | null = null;
@@ -115,7 +116,7 @@ export async function checkGeminiNanoAvailability(): Promise<'available' | 'down
 
 export async function classifyWithGeminiNano(text: string): Promise<{ blocked: boolean; reason?: string; confidence: number } | null> {
   const availability = await checkGeminiNanoAvailability();
-  if (availability !== 'available' && availability !== 'downloadable' && availability !== 'downloading') {
+  if (!isGeminiClassificationReady(availability)) {
     return null;
   }
 

@@ -6,27 +6,27 @@ import { resolve } from 'node:path';
 describe('isMarkdownDocumentation', () => {
   it('detects README-style markdown', () => {
     const readme = readFileSync(
-      resolve(import.meta.dirname, '../../../synapseclean-project/synapseclean/README.md'),
+      resolve(import.meta.dirname, '../README.md'),
       'utf8'
     );
     expect(isMarkdownDocumentation(readme)).toBe(true);
   });
 
   it('detects pasted README excerpt', () => {
-    const excerpt = `# SynapseClean
+    const excerpt = `# SourceCloak
 
 ## Overview
 
 | Capability | Description |
 |------------|-------------|
-| **Auto-compact** | Intercepts clipboard |
+| **Paste interception** | Blocks sensitive payloads locally |
 
 \`\`\`bash
 bun install
 bun run build
 \`\`\`
 
-[GitHub](https://github.com/fujiDevv/synapseclean)
+[GitHub](https://github.com/fujiDevv/sourcecloak)
 `;
     expect(isMarkdownDocumentation(excerpt)).toBe(true);
   });
