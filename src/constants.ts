@@ -24,11 +24,11 @@ export const LICENSE_VALIDATION_TTL_MS = 24 * 60 * 60 * 1000;
 
 export const PRO_PRICE = 24;
 export const PRO_PURCHASE_URL = 'https://sourcecloak.com/pricing';
-export const REFUND_POLICY =
-  'If enhanced AI is not available on your device and you are not satisfied with the baseline Pro experience, contact support within 14 days for a full refund.';
+export const NO_REFUND_NOTICE =
+  'All Pro purchases are final and non-refundable. Evaluate Community and run compatibility checks before upgrading.';
 
-/** @deprecated Use REFUND_POLICY */
-export const NO_REFUND_NOTICE = REFUND_POLICY;
+/** @deprecated Use NO_REFUND_NOTICE */
+export const REFUND_POLICY = NO_REFUND_NOTICE;
 
 export const DEVICE_COMPATIBILITY_URL = 'https://sourcecloak.com/compatibility';
 export const STORE_VALUE_PROPOSITION =

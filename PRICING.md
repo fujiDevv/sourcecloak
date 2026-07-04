@@ -36,7 +36,7 @@ Run the [device compatibility test](https://sourcecloak.com/compatibility) or op
 5. Paste the license key in Policy Console and click **Activate**
 6. Use **Deactivate on this device** to move the license to another browser
 
-**Refund policy:** If enhanced AI is not available on your device and you are not satisfied with the baseline Pro experience, contact support within 14 days for a full refund.
+**No refunds:** All Pro purchases are final and non-refundable. Evaluate Community and compatibility before upgrading.
 
 Details: [sourcecloak.com/pricing](https://sourcecloak.com/pricing) · [Terms](https://sourcecloak.com/terms)
 

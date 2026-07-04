@@ -3,7 +3,7 @@ import {
   DEFAULT_SETTINGS,
   DEVICE_COMPATIBILITY_URL,
   PRO_PRICE,
-  REFUND_POLICY,
+  NO_REFUND_NOTICE,
   STORAGE_KEYS,
 } from '../src/constants';
 import type { AICapabilityRecord } from '../src/ai-capability';
@@ -393,7 +393,7 @@ function escapeHtml(value: string): string {
 }
 
 haloPrice.textContent = `$${PRO_PRICE}`;
-haloRefundNotice.textContent = REFUND_POLICY;
+haloRefundNotice.textContent = NO_REFUND_NOTICE;
 versionTag.textContent = `v${extensionApi.runtime.getManifest()?.version ?? '1.0.0'}`;
 compatibilityLink.href = DEVICE_COMPATIBILITY_URL;
 
