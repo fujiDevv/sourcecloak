@@ -2,6 +2,7 @@
 import { pipeline, env } from '@huggingface/transformers';
 import { classifyWithRules, mergeClassificationResults } from './src/classifier';
 import { classifyWithGeminiNano } from './src/ai';
+import { isMarkdownDocumentation } from './src/markdown-doc';
 import type { ClassificationResult, SourceCloakSettings } from './src/types';
 import { extensionApi, getRuntimeUrl } from './src/platform';
 
@@ -73,6 +74,7 @@ async function getClassifier(): Promise<ClassifierPipeline> {
 
 async function runOnnxHeuristic(text: string, settings: SourceCloakSettings): Promise<ClassificationResult | null> {
   if (!settings.useOnnxClassifier || text.length < 24) return null;
+  if (isMarkdownDocumentation(text)) return null;
 
   try {
     const pipelineInstance = await getClassifier();

@@ -9,6 +9,8 @@ type GuardedElement = HTMLTextAreaElement | HTMLInputElement | HTMLElement;
 
 const GUARDED_SELECTOR = 'textarea, input[type="text"], input[type="search"], input[type="url"], input[type="email"], input:not([type]), [contenteditable=""], [contenteditable="true"], [contenteditable="plaintext-only"]';
 const elementPreviousValues = new WeakMap<Element, string>();
+const pasteInFlight = new WeakSet<Element>();
+const programmaticInput = new WeakSet<Element>();
 
 export interface InputGuardOptions {
   settings: SourceCloakSettings;
@@ -129,18 +131,23 @@ export class InputGuard {
     // For benign/async path, we DO NOT preventDefault. We let the browser or editor 
     // natively insert the text to keep its Virtual DOM in sync.
     elementPreviousValues.set(element, this.readElementValue(element));
+    pasteInFlight.add(element);
 
-    const result = await this.classifyPayload(clipboardText, 'paste', element.tagName.toLowerCase());
-    if (result.blocked) {
-      this.purgeAdvancedEditorSafely(element);
-      if (this.settings.showWarningOverlay) {
-        showBlockWarning(result.matches, this.settings.organizationName);
+    try {
+      const result = await this.classifyPayload(clipboardText, 'paste', element.tagName.toLowerCase());
+      if (result.blocked) {
+        this.purgeAdvancedEditorSafely(element);
+        if (this.settings.showWarningOverlay) {
+          showBlockWarning(result.matches, this.settings.organizationName);
+        }
+        // Audit/stats recorded by background classify-payload handler.
+        return;
       }
-      // Audit/stats recorded by background classify-payload handler.
-      return;
-    }
 
-    elementPreviousValues.set(element, this.readElementValue(element));
+      elementPreviousValues.set(element, this.readElementValue(element));
+    } finally {
+      pasteInFlight.delete(element);
+    }
   };
 
   private handleBeforeInput = (event: Event): void => {
@@ -156,6 +163,13 @@ export class InputGuard {
 
     const element = event.target as GuardedElement | null;
     if (!element) return;
+
+    if (pasteInFlight.has(element)) return;
+    if (programmaticInput.has(element)) {
+      programmaticInput.delete(element);
+      return;
+    }
+    if (event instanceof InputEvent && event.inputType === 'insertFromPaste') return;
 
     const currentValue = this.readElementValue(element);
     const previousValue = elementPreviousValues.get(element) ?? '';
@@ -243,13 +257,13 @@ export class InputGuard {
       }
       
       elementPreviousValues.set(element, nextValue);
-      element.dispatchEvent(new Event('input', { bubbles: true }));
+      this.dispatchGuardedInput(element);
       return;
     }
 
     element.textContent = `${element.textContent ?? ''}${text}`;
     elementPreviousValues.set(element, element.textContent ?? '');
-    element.dispatchEvent(new Event('input', { bubbles: true }));
+    this.dispatchGuardedInput(element);
   }
 
   private purgeElement(element: GuardedElement): void {
@@ -259,7 +273,7 @@ export class InputGuard {
       element.textContent = '';
     }
     elementPreviousValues.set(element, '');
-    element.dispatchEvent(new Event('input', { bubbles: true }));
+    this.dispatchGuardedInput(element);
   }
 
   private restoreOrPurge(element: GuardedElement, previousValue: string): void {
@@ -283,6 +297,11 @@ export class InputGuard {
     }
     
     elementPreviousValues.set(element, previousValue);
+    this.dispatchGuardedInput(element);
+  }
+
+  private dispatchGuardedInput(element: GuardedElement): void {
+    programmaticInput.add(element);
     element.dispatchEvent(new Event('input', { bubbles: true }));
   }
 }
