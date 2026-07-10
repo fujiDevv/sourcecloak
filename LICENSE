@@ -1,16 +1,27 @@
-MIT License
+# SourceCloak Proprietary License
 
-Copyright (c) 2026 FujiDevv
+Copyright (c) 2026 FujiDevv. All rights reserved.
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+SourceCloak (including Community and Pro) is proprietary software. It is **not** open source.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+## Community (free)
+
+You may install and use the free Community edition for personal or internal business purposes solely through official distribution channels (Chrome Web Store listing when available, or other builds authorized by FujiDevv).
+
+## Restrictions
+
+Without prior written permission from FujiDevv, you may not:
+
+- Redistribute, sublicense, sell, or publicly host SourceCloak source code or binaries
+- Reverse engineer the product except where applicable law prohibits this restriction
+- Remove or alter copyright, license, or proprietary notices
+- Use the product to build a competing product using SourceCloak's non-public implementation
+
+## Pro
+
+Pro features require a paid license. See [LICENSE-PRO.md](./LICENSE-PRO.md).
+
+## No warranty
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,

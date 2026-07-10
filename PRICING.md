@@ -29,7 +29,7 @@ Run the [device compatibility test](https://sourcecloak.com/compatibility) or op
 
 ## How to upgrade
 
-1. Install SourceCloak from the Chrome Web Store (or load unpacked from `dist/`)
+1. Install SourceCloak from the Chrome Web Store
 2. Open **Policy Console → Upgrade**
 3. Click **Buy Pro — $24 lifetime** (opens Lemon Squeezy checkout)
 4. Complete checkout — your **license key** is emailed immediately
@@ -47,4 +47,4 @@ Details: [sourcecloak.com/pricing](https://sourcecloak.com/pricing) · [Terms](h
 3. Set `LEMON_SQUEEZY_CHECKOUT_URL` in `src/constants.ts` to that URL
 4. Rebuild: `npm run build`
 
-License activation uses Lemon Squeezy's public license API (`api.lemonsqueezy.com`) — no backend or API key in the extension is required.
+License activation goes through the **SourceCloak license Worker** (`sourcecloak-backend`), which proxies Lemon Squeezy and enforces `EXPECTED_PRODUCT_ID`. The extension never talks to Lemon Squeezy directly and never embeds an LS API key.

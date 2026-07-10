@@ -1,4 +1,4 @@
-const LS_LICENSE_API = 'https://api.lemonsqueezy.com/v1/licenses';
+const LS_LICENSE_API = import.meta.env.VITE_LS_LICENSE_API || 'http://localhost:8787';
 
 export interface LemonSqueezyLicenseMeta {
   customer_email?: string;
@@ -22,6 +22,8 @@ export interface LicenseOperationResult {
   success: boolean;
   error?: string;
   customerEmail?: string;
+  /** True when failure is connectivity/server-side — not a definitive license rejection. */
+  transient?: boolean;
 }
 
 async function postLicenseEndpoint(
@@ -42,7 +44,14 @@ async function postLicenseEndpoint(
   });
 
   if (!response.ok) {
-    throw new Error(`License service unavailable (${response.status})`);
+    if (response.status >= 500 || response.status === 429) {
+      throw new Error(`License service unavailable (${response.status})`);
+    }
+    try {
+      return (await response.json()) as LemonSqueezyLicenseResponse;
+    } catch {
+      throw new Error(`License service unavailable (${response.status})`);
+    }
   }
 
   return response.json() as Promise<LemonSqueezyLicenseResponse>;
@@ -52,7 +61,8 @@ function parseLicenseResponse(data: LemonSqueezyLicenseResponse): LicenseOperati
   if (!data.activated) {
     return {
       success: false,
-      error: data.error ?? 'License could not be activated on this device.',
+      error: data.error || 'License was not activated.',
+      transient: false,
     };
   }
 
@@ -61,13 +71,14 @@ function parseLicenseResponse(data: LemonSqueezyLicenseResponse): LicenseOperati
     return {
       success: false,
       error: `License status is ${status}.`,
+      transient: false,
     };
   }
 
   if (data.license_key?.expires_at) {
     const expiresAt = new Date(data.license_key.expires_at);
     if (expiresAt.getTime() < Date.now()) {
-      return { success: false, error: 'License has expired.' };
+      return { success: false, error: 'License has expired.', transient: false };
     }
   }
 
@@ -82,7 +93,7 @@ export async function activateLicenseKey(
   instanceName: string
 ): Promise<LicenseOperationResult> {
   if (!licenseKey.trim()) {
-    return { success: false, error: 'Enter your license key from the purchase email.' };
+    return { success: false, error: 'Enter your license key from the purchase email.', transient: false };
   }
 
   try {
@@ -91,7 +102,8 @@ export async function activateLicenseKey(
   } catch (err) {
     return {
       success: false,
-      error: err instanceof Error ? err.message : 'Could not reach Lemon Squeezy.',
+      error: err instanceof Error ? err.message : 'Could not reach license server.',
+      transient: true,
     };
   }
 }
@@ -101,7 +113,7 @@ export async function validateLicenseKey(
   instanceName: string
 ): Promise<LicenseOperationResult> {
   if (!licenseKey.trim()) {
-    return { success: false, error: 'No license key stored.' };
+    return { success: false, error: 'No license key stored.', transient: false };
   }
 
   try {
@@ -111,6 +123,7 @@ export async function validateLicenseKey(
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Could not validate license.',
+      transient: true,
     };
   }
 }
@@ -120,19 +133,20 @@ export async function deactivateLicenseKey(
   instanceName: string
 ): Promise<LicenseOperationResult> {
   if (!licenseKey.trim()) {
-    return { success: false, error: 'No license key to deactivate.' };
+    return { success: false, error: 'No license key to deactivate.', transient: false };
   }
 
   try {
     const data = await postLicenseEndpoint('deactivate', licenseKey, instanceName);
-    if (!data.activated && data.error) {
-      return { success: false, error: data.error };
+    if (data.error && !data.activated) {
+      return { success: false, error: data.error, transient: false };
     }
     return { success: true };
   } catch (err) {
     return {
       success: false,
       error: err instanceof Error ? err.message : 'Could not deactivate license.',
+      transient: true,
     };
   }
 }

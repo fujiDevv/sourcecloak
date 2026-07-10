@@ -114,7 +114,11 @@ async function runFullClassification(text: string, settings: SourceCloakSettings
     result = mergeClassificationResults(result, onnxResult);
   }
 
-  if (settings.useGeminiNano && text.length >= 48 && (result.score >= 0.45 || result.matches.length > 0)) {
+  const isSuspicious = result.score >= 0.55 || result.matches.length > 0;
+  const isAlreadyBlocked = result.blocked || result.score >= 0.85;
+  const tokenEstimate = text.length / 4; // Rough estimate of tokens
+
+  if (settings.useGeminiNano && text.length >= 64 && tokenEstimate <= 1024 && isSuspicious && !isAlreadyBlocked) {
     const gemini = await classifyWithGeminiNano(text);
     if (!gemini) {
       extensionApi.runtime.sendMessage({ type: 'log-gemini-fallback' }).catch(() => {});
@@ -164,3 +168,6 @@ extensionApi.runtime.onMessage?.addListener((message, sender, sendResponse) => {
     return false;
   }
 });
+
+// Prewarm the ONNX model immediately upon offscreen instantiation
+getClassifier().catch(() => {});

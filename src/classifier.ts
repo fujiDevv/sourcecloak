@@ -2,11 +2,16 @@ import type { ClassificationResult, SourceCloakSettings, ThreatMatch } from './t
 import { runPatternScan } from './patterns';
 import { aggregateScore, scoreProprietaryTokens } from './token-scorer';
 
+/** Allowed / no-scan result (shared by rules short-circuit and domain skips). */
+export function allowResult(processingMs = 0): ClassificationResult {
+  return { blocked: false, score: 0, matches: [], processingMs };
+}
+
 export function classifyWithRules(text: string, settings: SourceCloakSettings): ClassificationResult {
   const started = performance.now();
 
   if (!text || text.trim().length < 4) {
-    return { blocked: false, score: 0, matches: [], processingMs: performance.now() - started };
+    return allowResult(performance.now() - started);
   }
 
   const regexMatches = runPatternScan(text, settings.customPatterns, settings.corporateSignatures);

@@ -1,10 +1,13 @@
 node_modules/
 dist/
-
-.DS_Store
 *.log
+.DS_Store
+*-store.zip
+sourcecloak-*.zip
 playwright-report/
 test-results/
+# Never commit private keys or license signing material
+*.pem
+*.key
+scripts/.license-private.pem
 
-# Chrome refuses to load unpacked extensions containing "_" prefixed paths.
-# Always load the built output: sourcecloak/dist

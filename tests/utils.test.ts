@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { isDomainMatch } from '../src/utils';
+import { isDomainMatch, isHostnameInScope } from '../src/utils';
 
 describe('isDomainMatch', () => {
   it('matches exact domains', () => {
@@ -18,5 +18,40 @@ describe('isDomainMatch', () => {
 
   it('handles empty pattern lists', () => {
     expect(isDomainMatch('github.com', [])).toBe(false);
+  });
+});
+
+describe('isHostnameInScope', () => {
+  it('skips trusted domains', () => {
+    expect(
+      isHostnameInScope('intranet.corp', {
+        trustedDomains: ['intranet.corp'],
+        monitoredDomains: ['chatgpt.com'],
+      })
+    ).toBe(false);
+  });
+
+  it('requires monitor allowlist when non-empty', () => {
+    expect(
+      isHostnameInScope('example.com', {
+        trustedDomains: [],
+        monitoredDomains: ['chatgpt.com'],
+      })
+    ).toBe(false);
+    expect(
+      isHostnameInScope('chatgpt.com', {
+        trustedDomains: [],
+        monitoredDomains: ['chatgpt.com'],
+      })
+    ).toBe(true);
+  });
+
+  it('scans all hosts when monitor list is empty', () => {
+    expect(
+      isHostnameInScope('anything.example', {
+        trustedDomains: [],
+        monitoredDomains: [],
+      })
+    ).toBe(true);
   });
 });

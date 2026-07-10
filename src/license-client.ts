@@ -1,9 +1,16 @@
-import { LICENSE_VALIDATION_TTL_MS, LEMON_SQUEEZY_CHECKOUT_URL, STORAGE_KEYS } from './constants';
+import {
+  DEV_PRO_UNLOCK,
+  LICENSE_GRACE_MS,
+  LICENSE_VALIDATION_TTL_MS,
+  LEMON_SQUEEZY_CHECKOUT_URL,
+  STORAGE_KEYS,
+} from './constants';
 import {
   activateLicenseKey,
   deactivateLicenseKey,
   validateLicenseKey,
 } from './lemon-squeezy';
+import { shouldRetainProOnValidationFailure } from './license-policy';
 import { extensionApi } from './platform';
 
 export interface StoredLicense {
@@ -20,6 +27,7 @@ export interface LicenseStatus {
   activatedAt?: number;
   lastValidatedAt?: number;
   error?: string;
+  grace?: boolean;
 }
 
 function createInstanceId(): string {
@@ -54,6 +62,10 @@ export async function openProCheckoutPage(): Promise<void> {
 }
 
 export async function activateProLicense(licenseKey: string): Promise<LicenseStatus> {
+  if (DEV_PRO_UNLOCK) {
+    return { isPro: true, customerEmail: 'developer@local' };
+  }
+
   const existing = await getStoredLicense();
   const instanceId = await getOrCreateInstanceId(existing);
   const result = await activateLicenseKey(licenseKey, instanceId);
@@ -90,6 +102,8 @@ export async function deactivateProLicense(): Promise<void> {
 }
 
 export async function isProUser(forceValidate = false): Promise<boolean> {
+  if (DEV_PRO_UNLOCK) return true;
+
   const license = await getStoredLicense();
   if (!license) return false;
 
@@ -100,6 +114,15 @@ export async function isProUser(forceValidate = false): Promise<boolean> {
 
   const result = await validateLicenseKey(license.licenseKey, license.instanceId);
   if (!result.success) {
+    if (
+      shouldRetainProOnValidationFailure({
+        lastValidatedAt: license.lastValidatedAt,
+        transient: Boolean(result.transient),
+        graceMs: LICENSE_GRACE_MS,
+      })
+    ) {
+      return true;
+    }
     await clearLicense();
     return false;
   }
@@ -114,6 +137,10 @@ export async function isProUser(forceValidate = false): Promise<boolean> {
 }
 
 export async function getLicenseStatus(): Promise<LicenseStatus> {
+  if (DEV_PRO_UNLOCK) {
+    return { isPro: true, customerEmail: 'developer@local' };
+  }
+
   const license = await getStoredLicense();
   if (!license) {
     return { isPro: false };
@@ -124,10 +151,14 @@ export async function getLicenseStatus(): Promise<LicenseStatus> {
     return { isPro: false };
   }
 
+  const age = Date.now() - license.lastValidatedAt;
+  const grace = age >= LICENSE_VALIDATION_TTL_MS;
+
   return {
     isPro: true,
     customerEmail: license.customerEmail,
     activatedAt: license.activatedAt,
     lastValidatedAt: license.lastValidatedAt,
+    grace: grace || undefined,
   };
 }

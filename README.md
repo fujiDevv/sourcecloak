@@ -108,15 +108,25 @@ sourcecloak/
 
 ---
 
-## Getting Started
+## End-user install
+
+Install from the **Chrome Web Store** (placeholder until the listing is live):
+
+`https://chromewebstore.google.com/detail/sourcecloak/PLACEHOLDER_EXTENSION_ID`
+
+SourceCloak is **proprietary** and is not distributed as open source.
+
+---
+
+## Maintainer development (private)
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) 18+
+- [Node.js](https://nodejs.org/) 18+ or Bun
 - Google Chrome or Chromium 120+ (Manifest V3 + offscreen documents)
 - Optional: Chrome built-in **Gemini Nano** for Tier 4 semantic review
 
-### Install
+### Install dependencies
 
 ```bash
 cd sourcecloak
@@ -131,7 +141,7 @@ npm run build
 
 The postbuild step validates that `dist/manifest.json` references compiled `.js` entrypoints and prints the load path.
 
-### Load in Chrome
+### Load unpacked (dev only)
 
 1. Open Chrome and navigate to `chrome://extensions`.
 2. Enable **Developer mode** in the top right.

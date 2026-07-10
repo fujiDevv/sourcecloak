@@ -24,11 +24,13 @@ function ensureMainWorldBridge(force = false): void {
     const channel = new MessageChannel();
     setMainWorldPort(channel.port1);
 
+    const nonce = crypto.randomUUID();
     const script = document.createElement('script');
     script.src = getRuntimeUrl('main_world.js');
+    script.dataset.nonce = nonce;
     script.onload = () => {
       script.remove();
-      window.postMessage({ type: 'SOURCECLOAK_AI_INIT_PORT' }, '*', [channel.port2]);
+      window.postMessage({ type: 'SOURCECLOAK_AI_INIT_PORT', nonce }, '*', [channel.port2]);
     };
     script.onerror = () => {
       mainWorldInjected = false;

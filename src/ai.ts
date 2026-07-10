@@ -132,7 +132,10 @@ Confidence is 0-1. Block when confidence >= 0.7.`;
 
   try {
     let clean = resultText.trim();
-    if (clean.startsWith('```')) {
+    const jsonMatch = clean.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      clean = jsonMatch[0];
+    } else if (clean.startsWith('```')) {
       clean = clean.replace(/^```(?:json)?\n?/, '').replace(/```$/, '').trim();
     }
     const parsed = JSON.parse(clean);
@@ -142,6 +145,18 @@ Confidence is 0-1. Block when confidence >= 0.7.`;
       confidence: typeof parsed.confidence === 'number' ? parsed.confidence : 0.7
     };
   } catch {
+    // Resilient Fallback for malformed JSON or token truncation
+    const isBlocked = /"blocked"\s*:\s*true/i.test(resultText);
+    const confidenceMatch = resultText.match(/"confidence"\s*:\s*(0\.\d+|1(\.0+)?)/i);
+    const confidence = confidenceMatch ? parseFloat(confidenceMatch[1]) : 0.7;
+    
+    if (isBlocked) {
+      return { 
+        blocked: true, 
+        reason: 'Semantic Block (Resilient Parse)', 
+        confidence 
+      };
+    }
     return null;
   }
 }

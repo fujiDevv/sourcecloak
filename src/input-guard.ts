@@ -3,7 +3,7 @@ import { debounce } from './throttle';
 import { requestBackgroundClassification } from './ai';
 import { classifyWithRules } from './classifier';
 import { showBlockWarning } from './warning-overlay';
-import { isDomainMatch } from './utils';
+import { isHostnameInScope } from './utils';
 
 type GuardedElement = HTMLTextAreaElement | HTMLInputElement | HTMLElement;
 
@@ -102,14 +102,7 @@ export class InputGuard {
     const clipboardText = pasteEvent.clipboardData?.getData('text/plain') ?? '';
     if (!clipboardText.trim()) return;
 
-    const hostname = window.location.hostname;
-
-    if (isDomainMatch(hostname, this.settings.trustedDomains)) {
-      return;
-    }
-
-    if (this.settings.monitoredDomains.length > 0 &&
-        !isDomainMatch(hostname, this.settings.monitoredDomains)) {
+    if (!isHostnameInScope(window.location.hostname, this.settings)) {
       return;
     }
 
@@ -232,38 +225,6 @@ export class InputGuard {
     } else {
       element.value = value;
     }
-  }
-
-  private insertText(element: GuardedElement, text: string): void {
-    if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || (element instanceof HTMLElement && element.isContentEditable)) {
-      element.focus();
-      if (document.execCommand('insertText', false, text)) {
-        elementPreviousValues.set(element, this.readElementValue(element));
-        return;
-      }
-    }
-    
-    if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement) {
-      const start = element.selectionStart ?? element.value.length;
-      const end = element.selectionEnd ?? element.value.length;
-      const nextValue = `${element.value.slice(0, start)}${text}${element.value.slice(end)}`;
-      
-      this.setNativeValue(element, nextValue);
-      const caret = start + text.length;
-      try {
-        element.setSelectionRange(caret, caret);
-      } catch (e) {
-        // Some input types don't support setSelectionRange
-      }
-      
-      elementPreviousValues.set(element, nextValue);
-      this.dispatchGuardedInput(element);
-      return;
-    }
-
-    element.textContent = `${element.textContent ?? ''}${text}`;
-    elementPreviousValues.set(element, element.textContent ?? '');
-    this.dispatchGuardedInput(element);
   }
 
   private purgeElement(element: GuardedElement): void {

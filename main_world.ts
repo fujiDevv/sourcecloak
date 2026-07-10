@@ -1,11 +1,14 @@
 (() => {
+  const currentScript = document.currentScript as HTMLScriptElement;
+  const expectedNonce = currentScript?.dataset?.nonce;
+
   try {
-    initMainWorldBridge();
+    initMainWorldBridge(expectedNonce);
   } catch (err) {
     console.warn('[SourceCloak] Main world bridge failed to initialize:', err);
   }
 
-  function initMainWorldBridge(): void {
+  function initMainWorldBridge(expectedNonce?: string): void {
   function getLanguageModel(): {
     availability?: (opts?: unknown) => Promise<string>;
     capabilities?: (opts?: unknown) => Promise<{ available: string }>;
@@ -25,6 +28,10 @@
   window.addEventListener('message', (initEvent) => {
     if (initEvent.source !== window || !initEvent.data) return;
     if (initEvent.data.type === 'SOURCECLOAK_AI_INIT_PORT' && initEvent.ports[0]) {
+      if (expectedNonce && initEvent.data.nonce !== expectedNonce) {
+        console.warn('[SourceCloak] Unauthorized access attempt to main world bridge.');
+        return;
+      }
       const port = initEvent.ports[0];
       port.onmessage = async (event) => {
         if (!event.data) return;
