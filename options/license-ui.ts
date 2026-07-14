@@ -1,4 +1,3 @@
-import { PRO_PRICE, NO_REFUND_NOTICE } from '../src/constants';
 import { extensionApi } from '../src/platform';
 import type { Edition } from '../src/types';
 import { el } from './dom';
@@ -27,8 +26,8 @@ export function createLicenseUi(): LicenseUi {
   const haloProEmail = el<HTMLParagraphElement>('halo-pro-email');
   const haloDeactivate = el<HTMLButtonElement>('halo-deactivate');
 
-  haloPrice.textContent = `$${PRO_PRICE}`;
-  haloRefundNotice.textContent = NO_REFUND_NOTICE;
+  haloPrice.textContent = '$0';
+  haloRefundNotice.textContent = '';
 
   function setHaloStatus(message: string, isError = false): void {
     haloStatus.textContent = message;

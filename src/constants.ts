@@ -12,27 +12,8 @@ export const STORAGE_KEYS = {
   WELCOME_SEEN: 'sourcecloak-welcome-seen',
 } as const;
 
-/**
- * Lemon Squeezy checkout URL for SourceCloak Pro ($24 lifetime).
- * Find this under Products → Share → Checkout link in your Lemon Squeezy dashboard.
- * Format: https://{store}.lemonsqueezy.com/checkout/buy/{variant-id}
- */
-export const LEMON_SQUEEZY_CHECKOUT_URL = 'https://sourcecloak.lemonsqueezy.com/checkout/buy/cad7f7d2-99ed-43ca-925a-6830bc8e5641';
-
-/** Revalidate stored license against Lemon Squeezy (ms). */
-export const LICENSE_VALIDATION_TTL_MS = 24 * 60 * 60 * 1000;
-/** Keep Pro active offline after last successful validation. */
-export const LICENSE_GRACE_MS = 14 * 24 * 60 * 60 * 1000;
-
 /** True in local dev builds — unlocks Pro without Lemon Squeezy. Never enable for store releases. */
-export const DEV_PRO_UNLOCK = import.meta.env.VITE_DEV_PRO_UNLOCK === 'true';
-
-export { PRO_PRICE, NO_REFUND_NOTICE, PRICING } from './pricing';
-export const PRO_PURCHASE_URL = 'https://sourcecloak.com/pricing';
-
-/** @deprecated Use NO_REFUND_NOTICE */
-export const REFUND_POLICY =
-  'All Pro purchases are final and non-refundable. Evaluate Community and run compatibility checks before upgrading.';
+export const DEV_PRO_UNLOCK = true;
 
 export const DEVICE_COMPATIBILITY_URL = 'https://sourcecloak.com/compatibility';
 export const STORE_VALUE_PROPOSITION =

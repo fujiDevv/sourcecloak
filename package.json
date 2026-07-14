@@ -3,7 +3,7 @@
   "version": "1.2.1",
   "description": "Client-side structural defense layer blocking proprietary code exposures before transmission.",
   "author": "FujiDevv",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "dependencies": {
     "@huggingface/transformers": "^4.2.0"

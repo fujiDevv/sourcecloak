@@ -23,7 +23,6 @@
         <button class="nav-btn nav-pro-only" data-tab="domains">Domain Scope</button>
         <button class="nav-btn" data-tab="audit">Audit Log</button>
         <button class="nav-btn nav-pro-only" data-tab="deployment">Deployment</button>
-        <button type="button" class="nav-btn nav-upgrade" data-open-halo>Upgrade</button>
       </nav>
       <div class="sidebar-footer">
         <span id="version-tag">v1.0.0</span>
@@ -94,12 +93,6 @@
               <span>Gemini Nano semantic review (Tier 4, optional enhancement)</span>
             </label>
             <p class="hint">Tier 1–3 run on every device. Tier 4 activates only when Gemini Nano is available and silently falls back to ONNX otherwise.</p>
-          </article>
-
-          <article class="card card-community-only halo-teaser" data-open-halo>
-            <h3>Pro policy controls</h3>
-            <p class="hint">Community includes Tier 1–3 ONNX protection on AI chat sites. Pro adds custom signatures, domain policy, exports, and full audit history — with or without Gemini Nano.</p>
-            <button type="button" class="btn-halo-teaser">See what Pro unlocks</button>
           </article>
 
           <article class="card">
@@ -211,52 +204,36 @@
       <div class="halo-glow" aria-hidden="true"></div>
       <div class="halo-card-inner">
         <img src="../assets/logo128.png" alt="" class="halo-logo" width="56" height="56">
-        <p class="halo-eyebrow">SourceCloak Pro</p>
-        <h2 id="halo-title" class="halo-title">The full defense stack, on-device</h2>
-        <p class="halo-lead">Community already blocks credentials and leaks with Tier 1–3 ONNX protection. Pro adds policy control, deployment tooling, and full audit depth — regardless of Gemini Nano availability.</p>
-
-        <div class="halo-tiers">
-          <div class="halo-tier halo-tier-active">
-            <span class="halo-tier-num">1–3</span>
-            <span class="halo-tier-label">Rules + ONNX</span>
-            <span class="halo-tier-note">Included</span>
-          </div>
-          <div class="halo-tier halo-tier-pro halo-tier-bonus">
-            <span class="halo-tier-num">4</span>
-            <span class="halo-tier-label">Gemini Nano</span>
-            <span class="halo-tier-note">Bonus</span>
-          </div>
-        </div>
+        <p class="halo-eyebrow">SourceCloak Open Source</p>
+        <h2 id="halo-title" class="halo-title">All Features Are Unlocked</h2>
+        <p class="halo-lead">SourceCloak is free and open-source under the MIT license. All security capabilities, custom signature rules, enterprise scope filters, and local audit metrics are available to everyone at no cost.</p>
 
         <ul class="halo-features">
-          <li>Custom regex &amp; corporate signatures</li>
-          <li>Monitored and trusted domain lists</li>
-          <li>Policy export / import for teams</li>
-          <li>Full audit history (500 events)</li>
-          <li>Full sensitivity range &amp; deployment profiles</li>
-          <li>Optional Tier 4 Gemini Nano when your device supports it</li>
+          <li>Custom regex &amp; corporate signatures (Unlocked)</li>
+          <li>Monitored and trusted domain lists (Unlocked)</li>
+          <li>Policy export / import for teams (Unlocked)</li>
+          <li>Full audit history (500 events) (Unlocked)</li>
+          <li>Full sensitivity range &amp; deployment profiles (Unlocked)</li>
+          <li>Gemini Nano semantic review (Unlocked)</li>
         </ul>
 
-        <div class="halo-actions">
-          <button type="button" id="halo-buy" class="btn-primary halo-cta">Buy Pro — <span id="halo-price">$24</span> lifetime</button>
-        </div>
-
-        <div id="halo-license-section" class="halo-license">
-          <label class="halo-license-label" for="halo-license-key">Already purchased? Enter your license key</label>
-          <div class="halo-license-row">
-            <input id="halo-license-key" type="text" class="halo-license-input" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false">
-            <button type="button" id="halo-activate" class="btn-secondary">Activate</button>
+        <!-- Hidden elements to preserve JS controller bindings and prevent errors -->
+        <div style="display: none;">
+          <button type="button" id="halo-buy"></button>
+          <span id="halo-price">$0</span>
+          <p id="halo-refund-notice"></p>
+          <div id="halo-license-section">
+            <input id="halo-license-key">
+            <button type="button" id="halo-activate"></button>
           </div>
-        </div>
-
-        <div id="halo-pro-section" class="halo-pro hidden">
-          <p id="halo-pro-email" class="halo-pro-email"></p>
-          <button type="button" id="halo-deactivate" class="btn-secondary halo-deactivate">Deactivate on this device</button>
+          <div id="halo-pro-section">
+            <p id="halo-pro-email"></p>
+            <button type="button" id="halo-deactivate"></button>
+          </div>
         </div>
 
         <p id="halo-status" class="halo-status"></p>
-        <p id="halo-refund-notice" class="halo-footnote halo-footnote-muted"></p>
-        <p class="halo-footnote">Secure checkout via <a href="https://www.lemonsqueezy.com" target="_blank" rel="noopener noreferrer">Lemon Squeezy</a> · <a href="https://sourcecloak.com/terms" target="_blank" rel="noopener noreferrer">Terms</a></p>
+        <p class="halo-footnote">Licensed under the MIT License · Free &amp; Open Source</p>
       </div>
     </div>
   </div>
