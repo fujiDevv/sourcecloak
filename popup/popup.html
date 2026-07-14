@@ -58,9 +58,12 @@
       </ul>
     </section>
 
-    <footer class="popup-footer">
-      <button id="open-options" class="btn-secondary">Policy Console</button>
-      <button type="button" id="explore-pro" class="explore-pro hidden">Explore Pro →</button>
+    <footer class="popup-footer" style="display: flex; gap: 8px;">
+      <button id="open-options" class="btn-secondary" style="flex: 1;">Policy Console</button>
+      <a href="https://ko-fi.com/fuijidevv" target="_blank" rel="noopener noreferrer" class="btn-secondary" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; text-decoration: none; border-color: rgba(255, 95, 95, 0.3); color: #ff5f5f;">
+        Donate
+      </a>
+      <button type="button" id="explore-pro" class="explore-pro hidden" style="display:none"></button>
     </footer>
   </div>
   <script type="module" src="popup.ts"></script>
