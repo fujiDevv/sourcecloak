@@ -235,7 +235,7 @@ Tests cover:
 | `content.ts` MIME error   | Rebuild with `npm run build` and reload `dist/`                       |
 | Block test not triggering | Check **Protection** is enabled in popup                              |
 | All scans skipped         | Verify the site is not listed under **Trusted Domains**               |
-| Only some hosts monitored | Community scans preset AI chat domains only; Pro can customize **Monitored Domains** (empty = all hosts) |
+| Only some hosts monitored | Scans preset AI chat domains by default; you can customize **Monitored Domains** in the Policy Console (empty = all hosts) |
 
 ---
 
@@ -246,7 +246,7 @@ Tests cover:
 | 1 | Regex | SSH key, AWS key, GitHub token |
 | 2 | Token scorer | CONFIDENTIAL + `@corp/` code block |
 | 3 | ONNX WASM | Long proprietary code payloads (after model loads) |
-| 4 | Gemini Nano | Optional semantic enhancement when Chrome Prompt API is available (Pro toggle) |
+| 4 | Gemini Nano | Optional semantic enhancement when Chrome Prompt API is available |
 
 Tier 1–3 (rules + ONNX) must pass on any modern Chrome without Gemini Nano. Check **popup → Local AI status** or **Policy Console → Re-check capability** for green (enhanced), blue (optimized ONNX), or yellow (temporary fallback) states.
 

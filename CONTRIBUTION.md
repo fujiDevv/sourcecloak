@@ -1,7 +1,14 @@
 # Contributions
 
-SourceCloak is a **proprietary** product and is **not** open source.
+SourceCloak is 100% free and open-source under the MIT license. We welcome contributions from the community!
 
-External pull requests and public contribution are not accepted. If you have a bug report, security issue, or product question, contact support via [sourcecloak.com/contact](https://sourcecloak.com/contact) or the email listed on the site.
+## How to Contribute
 
-Maintainers working in this private monorepo follow internal engineering practices; do not publish SourceCloak source outside authorized channels.
+1. **Submit Bug Reports & Feature Ideas:** Create an issue on our GitHub repository.
+2. **Pull Requests:** 
+   - Fork the repository.
+   - Create a feature branch.
+   - Run tests (`npm run verify`) to ensure all checks pass.
+   - Submit a pull request with a detailed description of your changes.
+
+Thank you for helping make on-device code protection better for everyone!

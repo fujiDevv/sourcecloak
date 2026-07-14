@@ -114,11 +114,11 @@ Install from the **Chrome Web Store** (placeholder until the listing is live):
 
 `https://chromewebstore.google.com/detail/sourcecloak/PLACEHOLDER_EXTENSION_ID`
 
-SourceCloak is **proprietary** and is not distributed as open source.
+SourceCloak is 100% free and open-source under the MIT license.
 
 ---
 
-## Maintainer development (private)
+## Contributor development
 
 ### Prerequisites
 
@@ -180,8 +180,8 @@ Open the **Policy Console** from the extension options page or popup.
 |---------|---------|---------|
 | Protection | Enabled | Master on/off switch |
 | Sensitivity | 65 | Block threshold (0 = strict, 100 = permissive) |
-| ONNX classifier | Always on | Offscreen WASM structural analysis (Community + Pro) |
-| Gemini Nano | Pro optional | Tier 4 enhancement when Prompt API is available |
+| ONNX classifier | Always on | Offscreen WASM structural analysis |
+| Gemini Nano | Optional | Tier 4 enhancement when Prompt API is available |
 | Monitored domains | All | Restrict scanning to specific hosts |
 | Trusted domains | None | Bypass scanning for internal tools |
 | Corporate signatures | Empty | Organization-specific config markers |
@@ -211,20 +211,10 @@ No remote servers receive scanned payload content. Hugging Face is contacted onl
 
 ## License
 
-Copyright (c) 2026 **FujiDevv**
-
-All rights reserved. This software is proprietary and may not be copied, distributed, or modified without express permission.
+SourceCloak is free and open-source software licensed under the MIT License. See [LICENSE](./LICENSE) for the full license text.
 
 ---
 
-## Pricing
-
-SourceCloak **Community** is free with Tier 1–3 ONNX protection on major AI chat sites. **Pro** is a **$24 lifetime** upgrade for custom signatures, domain scope, policy export, and full audit history — independent of Gemini Nano availability.
-
-See [PRICING.md](./PRICING.md) and [sourcecloak.com/pricing](https://sourcecloak.com/pricing).
-
-Upgrade in **Policy Console → Upgrade** via Lemon Squeezy. Scanned content still never leaves the browser.
-
 ## B2B Positioning
 
-SourceCloak is designed as a browser utility for engineering organizations that need structural, client-side leak prevention without routing employee traffic through a cloud proxy. Policy signatures, domain scope, and audit retention are configurable per deployment with Pro.
+SourceCloak is designed as a browser utility for engineering organizations that need structural, client-side leak prevention without routing employee traffic through a cloud proxy. Policy signatures, domain scope, and audit retention are fully configurable per deployment at no cost.

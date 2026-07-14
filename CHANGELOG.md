@@ -1,5 +1,14 @@
 # Changelog
 
+## 1.2.1 — July 14, 2026
+
+### Open Source Migration
+- SourceCloak is now 100% free and open-source under the MIT License
+- All advanced/premium features unlocked for all users by default
+- Removed Lemon Squeezy integration, pricing models, checkout links, and license validation servers
+- Replaced Upgrade/License modals with open-source project guides
+- Simplified and cleaned monorepo documentation
+
 ## 1.1.1 — July 4, 2026
 
 ### Security & Classification
