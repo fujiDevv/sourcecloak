@@ -37,12 +37,17 @@ export function createLicenseUi(): LicenseUi {
   function openHalo(): void {
     haloOverlay.classList.remove('hidden');
     haloOverlay.setAttribute('aria-hidden', 'false');
+    haloOverlay.removeAttribute('inert');
     setHaloStatus('');
   }
 
   function closeHalo(): void {
+    if (document.activeElement && haloOverlay.contains(document.activeElement)) {
+      (document.activeElement as HTMLElement).blur();
+    }
     haloOverlay.classList.add('hidden');
     haloOverlay.setAttribute('aria-hidden', 'true');
+    haloOverlay.setAttribute('inert', '');
   }
 
   function applyEdition(edition: Edition, customerEmail?: string): void {
