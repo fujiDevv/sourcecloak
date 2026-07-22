@@ -13,8 +13,6 @@
     "@playwright/test": "^1.61.1",
     "@types/chrome": "^0.0.268",
     "@types/node": "^26.0.1",
-    "javascript-obfuscator": "^5.4.3",
-    "rollup-plugin-obfuscator": "^1.1.0",
     "typescript": "^5.4.5",
     "vite": "^6.0.0",
     "vitest": "^4.1.9"
